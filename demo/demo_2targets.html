@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <script type="module" src="../whirling/js/demo_2.js"></script>
+
+    <style>
+      video {
+        transform: scaleX(-1);
+      }
+      #mediapipe-canvas {
+        transform: scaleX(-1);
+      }
+      /* Add some basic styling for the toggle switches */
+      .switch {
+        position: absolute;
+        z-index: 9999;
+        top:400px;
+        left: 10px;
+      }
+      .switch label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      .slider {
+        display: flex;
+        align-items: left;
+      }
+      .slider label {
+        margin-right: 10px;
+      }
+      .dropdown {
+        display: flex;
+        align-items: left;
+      }
+      .dropdown label {
+        margin-right: 10px;
+      }
+      
+    </style>
+
+  </head>
+  <body>
+    <!-- Add the toggle switches -->
+    <div class="switch" style="display: none;">
+
+      <label>
+        <input type="checkbox" id="toggleVideo" checked>
+        Toggle Video
+      </label>
+      
+      <label>
+        <input type="checkbox" id="toggleActiveMode">
+        Toggle Active Mode
+      </label>
+
+      <div class="slider">
+        <label for="radiusSlider">Radius:</label>
+        <input type="range" id="radiusSlider" min="0.01" max="1" step="0.01" value="0.05">
+      </div>
+      
+      <div class="dropdown">
+        <label for="handSelector">Target Hand:</label>
+        <select id="handSelector">
+          <option value="left">Right</option>
+          <option value="right">Left</option>
+        </select>
+      </div>
+
+      <div class="dropdown">
+        <label for="jointSelector">Target Joint:</label>
+        <select id="jointSelector">
+          <option value="wrist">Wrist</option>
+          <option value="thumb_tip">Thumb</option>
+          <option value="index_tip">Index</option>
+          <option value="middle_tip">Middle</option>
+          <option value="ring_tip">Ring</option>
+          <option value="pinky_tip">Pinky</option>
+        </select>
+      </div>
+
+
+    </div>
+
+
+      <a-scene input-manager hand-tracking>
+        <a-sky color="#ECECEC"></a-sky>
+      </a-scene>
+
+
+
+
+    <script>
+      // JavaScript to handle the toggle switch functionality
+      let mediapipeEnabled = true;
+      let forcedActiveMode = false;
+
+      // Handle radius slider input
+      document.getElementById('radiusSlider').addEventListener('input', function() {
+        const radius = this.value;
+        let inputManager = document.querySelector('a-scene').components['input-manager'].manager;
+        inputManager.setOrbitTargetRadius(radius);
+      });
+
+      document.getElementById('toggleVideo').addEventListener('change', function() {
+        if (this.checked) {
+          console.log('Video is ON');
+          let videoElement = document.getElementById('mediapipe-canvas');
+          // Show video
+          videoElement.style.display = 'block';
+        } else {
+          console.log('Video is OFF');
+          let videoElement = document.getElementById('mediapipe-canvas');
+          // Hide video
+          videoElement.style.display = 'none';
+        }
+      });
+
+      document.getElementById('toggleActiveMode').addEventListener('change', function() {
+        if (this.checked) {
+          console.log('Forced active mode is ON');
+          // Set forced active mode
+        } else {
+          console.log('Forced active mode is OFF');
+          // Set forced active mode
+        }
+      });
+
+    </script>
+  </body>
+</html>
