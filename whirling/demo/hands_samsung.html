@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hand Input Module in A-Frame</title>
+     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
+</head>
+
+<body>
+    <a-scene xr-mode-ui="enabled: true; enterAREnabled: true; XRMode: ar;" webxr="optionalFeatures: hand-tracking">
+        <a-entity hand-skeleton></a-entity>
+    </a-scene>
+
+    <script>
+        const orderedJoints = [
+            ["thumb-metacarpal", "thumb-phalanx-proximal", "thumb-phalanx-distal", "thumb-tip"],
+            ["index-finger-metacarpal", "index-finger-phalanx-proximal", "index-finger-phalanx-intermediate", "index-finger-phalanx-distal", "index-finger-tip"],
+            ["middle-finger-metacarpal", "middle-finger-phalanx-proximal", "middle-finger-phalanx-intermediate", "middle-finger-phalanx-distal", "middle-finger-tip"],
+            ["ring-finger-metacarpal", "ring-finger-phalanx-proximal", "ring-finger-phalanx-intermediate", "ring-finger-phalanx-distal", "ring-finger-tip"],
+            ["pinky-finger-metacarpal", "pinky-finger-phalanx-proximal", "pinky-finger-phalanx-intermediate", "pinky-finger-phalanx-distal", "pinky-finger-tip"]
+        ];
+
+        AFRAME.registerComponent('hand-skeleton', {
+            init: function () {
+                this.referenceSpace = null;
+                this.frame = null;
+                this.spheres = {}; // store spheres for each joint
+            },
+
+            tick: function () {
+                if (!this.frame) {
+                    this.frame = this.el.sceneEl.frame;
+                    this.referenceSpace = this.el.sceneEl.renderer.xr.getReferenceSpace();
+                } else {
+                    this.renderHandSkeleton();
+                    // add interaction
+                    // perform gesture detection
+                }
+            },
+
+            renderHandSkeleton: function() {
+                const session = this.el.sceneEl.renderer.xr.getSession();
+                const inputSources = session.inputSources;
+                if (!this.frame || !this.referenceSpace) {
+                    return;
+                }
+                for (const inputSource of inputSources) {
+                    if (inputSource.hand) {
+                        const hand = inputSource.hand;
+                        const handedness = inputSource.handedness;
+                        for (const finger of orderedJoints) {
+                            for (const jointName of finger) {
+                                const joint = hand.get(jointName);
+                                if (joint) {
+                                    const jointPose = this.frame.getJointPose(joint, this.referenceSpace);
+                                    const position = jointPose.transform.position;
+                                    if (!this.spheres[handedness + '_' + jointName]) {
+                                        this.spheres[handedness + '_' + jointName] = this.drawSphere(jointPose.radius, position);
+                                    } else {
+                                        this.spheres[handedness + '_' + jointName].object3D.position.set(position.x, position.y, position.z);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            remove: function () {
+                // clean up rendered spheres
+                for (const jointName in this.spheres) {
+                    this.spheres[jointName].parentNode.removeChild(this.spheres[jointName]);
+                }
+            },
+
+            drawSphere: function(radius, position) {
+                const sphere = document.createElement('a-sphere');
+                sphere.setAttribute('radius', radius);
+                sphere.setAttribute('color', 'red');
+                sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+                this.el.appendChild(sphere);
+                return sphere;
+            },
+        });
+    </script>
+
+</body>
+
+</html>

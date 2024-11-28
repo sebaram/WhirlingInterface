@@ -2,6 +2,9 @@ import { MAXIMUM_FRAME } from './constants.js';
 import { InputManager } from './inputmanager.js';
 import { OrbitTarget } from './orbittarget.js';
 
+
+
+
 AFRAME.registerComponent('input-manager', {
     init: function () {
       this.manager = new InputManager();
@@ -30,12 +33,13 @@ AFRAME.registerComponent('input-manager', {
     tick: function (time) {
       this.manager.update(time);
 
-      console.log("Tick: " + time);
+      
 
       // Add correlation calculation in tick
       if (time - this.lastCorrelationTime >= this.correlationInterval) {
         this.manager.calculateCorrelations();
         this.lastCorrelationTime = time;
+        
       }
     }
   });
@@ -43,6 +47,8 @@ AFRAME.registerComponent('input-manager', {
 
   AFRAME.registerComponent('hand-tracking', {
     init: function() {
+      AFRAME.log("hand-tracking|"+this.el);
+      this.sceneEl = this.el.sceneEl;
       this.isVRHeadset = this.el.sceneEl.is('vr-mode');
       this.inputManager = document.querySelector('a-scene').components['input-manager'].manager;
 
@@ -66,18 +72,59 @@ AFRAME.registerComponent('input-manager', {
       });
 
       if (this.isVRHeadset) {
-        console.log("VR mode starting...");
-        this.initializeVRHandTracking();
+        AFRAME.log("VR mode starting...");
       } else {
-        console.log("Non-VR mode(mediapipe) starting...");
+        AFRAME.log("Non-VR mode(mediapipe) starting...");
         this.initializeMediaPipe();
       }
+
+      this.el.addEventListener("enter-vr", function (evt) {
+        AFRAME.log("hand-tracking|entering vr");
+        AFRAME.log("hand-tracking|"+this.sceneEl);
+
+      // Get references to hand entities
+      const leftHand = document.querySelector('#leftHand');
+      const rightHand = document.querySelector('#rightHand');
+
+      // Add hand tracking changed listeners
+      leftHand.addEventListener('handtrackingchanged', (evt) => {
+        AFRAME.log("hand-tracking|leftHand changed");
+        if (this.targetHand === 'left') {
+          const jointIndex = this.jointIndices[this.targetJoint];
+          const joint = evt.detail.hand.joints[jointIndex];
+          if (joint) {
+            this.inputManager.updateHandPosition(joint.position);
+          }
+        }
+      });
+
+      rightHand.addEventListener('handtrackingchanged', (evt) => {
+        AFRAME.log("hand-tracking|rightHand changed");
+        if (this.targetHand === 'right') {
+          const jointIndex = this.jointIndices[this.targetJoint];
+          const joint = evt.detail.hand.joints[jointIndex];
+          if (joint) {
+            this.inputManager.updateHandPosition(joint.position);
+          }
+        }
+      });
+
+
+
+      });
+      this.el.addEventListener("exit-vr", function (evt) {
+        AFRAME.log("hand-tracking|exiting vr");
+        this.initializeMediaPipe();
+  
+      });
     },
 
     initializeVRHandTracking: function() {
       // Initialize VR hand tracking
       this.el.addEventListener('enter-vr', () => {
         if (this.el.sceneEl.is('ar-mode')) return;
+
+        AFRAME.log("hand-tracking|Entering VR mode: initializeVRHandTracking");
         
         const hands = Array.from(this.el.sceneEl.querySelectorAll('[hand-tracking-controls]'));
         hands.forEach(hand => {
@@ -87,6 +134,12 @@ AFRAME.registerComponent('input-manager', {
     },
 
     initializeMediaPipe: function() {
+      //check if webcam is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        AFRAME.log("Webcam not supported");
+        return;
+      }
+
       // Create video element
       this.videoElement = document.createElement('video');
       this.videoElement.style.display = 'none';
@@ -149,6 +202,7 @@ AFRAME.registerComponent('input-manager', {
     onVRHandTrackingChanged: function(event) {
       const hand = event.target;
       const handedness = hand.getAttribute('hand-tracking-controls').hand;
+      AFRAME.log("onVRHandTrackingChanged: " + event);
       
       if (handedness === this.targetHand) {
         const joints = hand.components['hand-tracking-controls'].getJoints();

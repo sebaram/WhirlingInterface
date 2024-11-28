@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="/aframe/dist/aframe-master.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/aframe-log-component/dist/aframe-log-component.min.js"></script> 
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.4.0/dist/aframe-extras.min.js"></script>
 
-    <script type="module" src="../whirling/js/demo_2.js"></script>
+
+    <script type="module" src="/static/js/demo_2.js"></script>
 
     <style>
       video {
@@ -88,10 +91,15 @@
     </div>
 
 
-      <a-scene input-manager hand-tracking>
+      <a-scene environment input-manager hand-tracking>
         <a-sky color="#ECECEC"></a-sky>
-      </a-scene>
 
+        <a-entity log geometry="primitive: plane" material="color: #111" text="color: lightgreen" position="-1 1.5 -2"></a-entity>
+
+
+        <a-entity id="leftHand" hand-tracking-controls="hand: left; color: #ffcccc"></a-entity>
+        <a-entity id="rightHand" hand-tracking-controls="hand: right; color: #ffcccc"></a-entity>
+      </a-scene>
 
 
 
