@@ -81,6 +81,11 @@ app.get('/', (req, res) => {
     });
 });
 
+// Route /demo to the home page
+app.get('/demo', (req, res) => {
+    res.redirect('/');
+});
+
 // Route for demo files
 app.get('/demo/:filename', (req, res) => {
     res.sendFile(path.join(__dirname, 'whirling/demo', req.params.filename));

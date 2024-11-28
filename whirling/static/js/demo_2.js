@@ -2,7 +2,68 @@ import { MAXIMUM_FRAME } from './constants.js';
 import { InputManager } from './inputmanager.js';
 import { OrbitTarget } from './orbittarget.js';
 
+AFRAME.registerComponent('hand-skeleton', {
+  init: function () {
+      this.referenceSpace = null;
+      this.frame = null;
+      this.spheres = {}; // store spheres for each joint
+  },
 
+  tick: function () {
+      if (!this.frame) {
+          this.frame = this.el.sceneEl.frame;
+          this.referenceSpace = this.el.sceneEl.renderer.xr.getReferenceSpace();
+      } else {
+          this.renderHandSkeleton();
+          // add interaction
+          // perform gesture detection
+      }
+  },
+
+  renderHandSkeleton: function() {
+      const session = this.el.sceneEl.renderer.xr.getSession();
+      const inputSources = session.inputSources;
+      if (!this.frame || !this.referenceSpace) {
+          return;
+      }
+      for (const inputSource of inputSources) {
+          if (inputSource.hand) {
+              const hand = inputSource.hand;
+              const handedness = inputSource.handedness;
+              for (const finger of orderedJoints) {
+                  for (const jointName of finger) {
+                      const joint = hand.get(jointName);
+                      if (joint) {
+                          const jointPose = this.frame.getJointPose(joint, this.referenceSpace);
+                          const position = jointPose.transform.position;
+                          if (!this.spheres[handedness + '_' + jointName]) {
+                              this.spheres[handedness + '_' + jointName] = this.drawSphere(jointPose.radius, position);
+                          } else {
+                              this.spheres[handedness + '_' + jointName].object3D.position.set(position.x, position.y, position.z);
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  },
+
+  remove: function () {
+      // clean up rendered spheres
+      for (const jointName in this.spheres) {
+          this.spheres[jointName].parentNode.removeChild(this.spheres[jointName]);
+      }
+  },
+
+  drawSphere: function(radius, position) {
+      const sphere = document.createElement('a-sphere');
+      sphere.setAttribute('radius', radius);
+      sphere.setAttribute('color', 'red');
+      sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+      this.el.appendChild(sphere);
+      return sphere;
+  },
+});
 
 
 AFRAME.registerComponent('input-manager', {
@@ -14,7 +75,7 @@ AFRAME.registerComponent('input-manager', {
       this.lastCorrelationTime = 0;
       this.correlationInterval = 200;
       // Create a single big orbit target in the middle
-      const orbitPosition = '0 1.5 -1';
+      const orbitPosition = '0 1.5 -2';
       const speed = 2;
       const clockwise = true;
       const radius = 0.2; // Increased radius for the big target
@@ -22,24 +83,21 @@ AFRAME.registerComponent('input-manager', {
       const orbit = new OrbitTarget(0, radius, speed, clockwise, orbitPosition);
       this.manager.addOrbit(orbit);
 
-      const orbit2 = new OrbitTarget(1, radius, speed, !clockwise, '1 1.5 -1');
+      const orbit2 = new OrbitTarget(1, radius, speed, !clockwise, '1 1.5 -2');
       this.manager.addOrbit(orbit2);
-
     },
 
     remove: function () {
     },
 
     tick: function (time) {
+      // update the input manager, it handles the orbits
       this.manager.update(time);
-
-      
 
       // Add correlation calculation in tick
       if (time - this.lastCorrelationTime >= this.correlationInterval) {
         this.manager.calculateCorrelations();
-        this.lastCorrelationTime = time;
-        
+        this.lastCorrelationTime = time;        
       }
     }
   });
@@ -78,36 +136,11 @@ AFRAME.registerComponent('input-manager', {
         this.initializeMediaPipe();
       }
 
+      this.frame = null;
+
       this.el.addEventListener("enter-vr", function (evt) {
         AFRAME.log("hand-tracking|entering vr");
         AFRAME.log("hand-tracking|"+this.sceneEl);
-
-      // Get references to hand entities
-      const leftHand = document.querySelector('#leftHand');
-      const rightHand = document.querySelector('#rightHand');
-
-      // Add hand tracking changed listeners
-      leftHand.addEventListener('handtrackingchanged', (evt) => {
-        AFRAME.log("hand-tracking|leftHand changed");
-        if (this.targetHand === 'left') {
-          const jointIndex = this.jointIndices[this.targetJoint];
-          const joint = evt.detail.hand.joints[jointIndex];
-          if (joint) {
-            this.inputManager.updateHandPosition(joint.position);
-          }
-        }
-      });
-
-      rightHand.addEventListener('handtrackingchanged', (evt) => {
-        AFRAME.log("hand-tracking|rightHand changed");
-        if (this.targetHand === 'right') {
-          const jointIndex = this.jointIndices[this.targetJoint];
-          const joint = evt.detail.hand.joints[jointIndex];
-          if (joint) {
-            this.inputManager.updateHandPosition(joint.position);
-          }
-        }
-      });
 
 
 
@@ -119,19 +152,55 @@ AFRAME.registerComponent('input-manager', {
       });
     },
 
-    initializeVRHandTracking: function() {
-      // Initialize VR hand tracking
-      this.el.addEventListener('enter-vr', () => {
-        if (this.el.sceneEl.is('ar-mode')) return;
+    tick: function(time){
+      if (!this.frame) {
+        this.frame = this.el.sceneEl.frame;
+        this.referenceSpace = this.el.sceneEl.renderer.xr.getReferenceSpace();
+      } else {
+        const session = this.el.sceneEl.renderer.xr.getSession();
+        const inputSources = session.inputSources;
+        if(!this.frame || !this.referenceSpace){
+          return;
+        }
+        // refer joints: https://www.w3.org/TR/webxr-hand-input-1/
+        if(inputSources.length > 0){
+          for (const inputSource of inputSources) {
+            if (inputSource.hand) {
+              const hand = inputSource.hand;
+              const handedness = inputSource.handedness;
+              
+              if (handedness === 'right') {
+                // get wrist joint
+                const wristJoint = hand.get('wrist');
+                if(wristJoint){
+                  this.inputManager.setInactive(false);
 
-        AFRAME.log("hand-tracking|Entering VR mode: initializeVRHandTracking");
-        
-        const hands = Array.from(this.el.sceneEl.querySelectorAll('[hand-tracking-controls]'));
-        hands.forEach(hand => {
-          hand.addEventListener('handtrackingchanged', this.onVRHandTrackingChanged.bind(this));
-        });
-      });
+                  const wristPose = this.frame.getJointPose(wristJoint, this.referenceSpace);
+                  const wristPosition = wristPose.transform.position;
+
+                  this.inputManager.wristHistory.push({
+                    timestamp: time,
+                    position: {x: wristPosition.x, y: wristPosition.y, z: wristPosition.z}
+                  });
+
+                  if (this.inputManager.wristHistory.length > MAXIMUM_FRAME) {
+                    this.inputManager.wristHistory.shift();
+                  }
+
+                  this.inputManager.orbits.forEach(orbit => {
+                    orbit.addThetaHistory(time);
+                  });
+                }
+              }            
+            } 
+          }
+        }else{
+          this.inputManager.setInactive(true);
+        }
+
+      }
     },
+
 
     initializeMediaPipe: function() {
       //check if webcam is available
@@ -197,36 +266,6 @@ AFRAME.registerComponent('input-manager', {
       // Update canvas style for correct display
       this.canvasElement.style.width = `${width}px`;
       this.canvasElement.style.height = `${height}px`;
-    },
-
-    onVRHandTrackingChanged: function(event) {
-      const hand = event.target;
-      const handedness = hand.getAttribute('hand-tracking-controls').hand;
-      AFRAME.log("onVRHandTrackingChanged: " + event);
-      
-      if (handedness === this.targetHand) {
-        const joints = hand.components['hand-tracking-controls'].getJoints();
-        const targetJoint = joints[this.jointIndices[this.targetJoint]];
-        
-        if (targetJoint) {
-          this.inputManager.setInactive(false);
-          const timestamp = performance.now();
-          const position = targetJoint.position;
-          
-          this.inputManager.wristHistory.push({
-            timestamp: timestamp,
-            position: {x: position.x, y: position.y, z: position.z}
-          });
-
-          if (this.inputManager.wristHistory.length > MAXIMUM_FRAME) {
-            this.inputManager.wristHistory.shift();
-          }
-
-          this.inputManager.orbits.forEach(orbit => {
-            orbit.addThetaHistory(timestamp);
-          });
-        }
-      }
     },
 
     onResults: function(results) {
