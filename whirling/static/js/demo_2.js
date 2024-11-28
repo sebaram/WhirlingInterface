@@ -105,12 +105,12 @@ AFRAME.registerComponent('input-manager', {
 
   AFRAME.registerComponent('hand-tracking', {
     init: function() {
-      AFRAME.log("hand-tracking|"+this.el);
       this.sceneEl = this.el.sceneEl;
       this.isVRHeadset = this.el.sceneEl.is('vr-mode');
       this.inputManager = document.querySelector('a-scene').components['input-manager'].manager;
 
       this.targetHand = 'left';
+      this.oppositeHand = 'right';
       this.targetJoint = 'wrist';
       this.jointIndices = {
         'wrist': 0,
@@ -124,10 +124,12 @@ AFRAME.registerComponent('input-manager', {
       // Add event listeners for hand and joint selectors
       document.getElementById('handSelector').addEventListener('change', (event) => {
         this.targetHand = event.target.value;
+        this.oppositeHand = this.targetHand === 'left' ? 'right' : 'left';
       });
       document.getElementById('jointSelector').addEventListener('change', (event) => {
         this.targetJoint = event.target.value;
       });
+      console.log("hand-tracking|target hand: "+this.targetHand);
 
       if (this.isVRHeadset) {
         AFRAME.log("VR mode starting...");
@@ -280,7 +282,8 @@ AFRAME.registerComponent('input-manager', {
         let targetHandLandmarks = null;
       
         for (let i = 0; i < results.multiHandedness.length; i++) {
-          if (results.multiHandedness[i].label.toLowerCase() === this.targetHand) {
+          // don't use targetHand, use oppositeHand: mediapipe bug?
+          if (results.multiHandedness[i].label.toLowerCase() === this.oppositeHand) {
             targetHandLandmarks = results.multiHandLandmarks[i];
             break;
           }

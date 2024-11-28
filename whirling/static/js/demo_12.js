@@ -64,7 +64,8 @@ AFRAME.registerComponent('input-manager', {
       this.isVRHeadset = this.el.sceneEl.is('vr-mode');
       this.inputManager = document.querySelector('a-scene').components['input-manager'].manager;
 
-      this.targetHand = 'left';
+      this.targetHand = 'right';
+      this.oppositeHand = 'left';
       this.targetJoint = 'wrist';
       this.jointIndices = {
         'wrist': 0,
@@ -78,6 +79,7 @@ AFRAME.registerComponent('input-manager', {
       // Add event listeners for hand and joint selectors
       document.getElementById('handSelector').addEventListener('change', (event) => {
         this.targetHand = event.target.value;
+        this.oppositeHand = this.targetHand === 'left' ? 'right' : 'left';
       });
       document.getElementById('jointSelector').addEventListener('change', (event) => {
         this.targetJoint = event.target.value;
@@ -90,17 +92,7 @@ AFRAME.registerComponent('input-manager', {
       }
     },
 
-    initializeVRHandTracking: function() {
-      // Initialize VR hand tracking
-      this.el.addEventListener('enter-vr', () => {
-        if (this.el.sceneEl.is('ar-mode')) return;
-        
-        const hands = Array.from(this.el.sceneEl.querySelectorAll('[hand-tracking-controls]'));
-        hands.forEach(hand => {
-          hand.addEventListener('handtrackingchanged', this.onVRHandTrackingChanged.bind(this));
-        });
-      });
-    },
+
 
     initializeMediaPipe: function() {
       // Create video element
@@ -161,35 +153,6 @@ AFRAME.registerComponent('input-manager', {
       this.canvasElement.style.height = `${height}px`;
     },
 
-    onVRHandTrackingChanged: function(event) {
-      const hand = event.target;
-      const handedness = hand.getAttribute('hand-tracking-controls').hand;
-      
-      if (handedness === this.targetHand) {
-        const joints = hand.components['hand-tracking-controls'].getJoints();
-        const targetJoint = joints[this.jointIndices[this.targetJoint]];
-        
-        if (targetJoint) {
-          this.inputManager.setInactive(false);
-          const timestamp = performance.now();
-          const position = targetJoint.position;
-          
-          this.inputManager.wristHistory.push({
-            timestamp: timestamp,
-            position: {x: position.x, y: position.y, z: position.z}
-          });
-
-          if (this.inputManager.wristHistory.length > MAXIMUM_FRAME) {
-            this.inputManager.wristHistory.shift();
-          }
-
-          this.inputManager.orbits.forEach(orbit => {
-            orbit.addThetaHistory(timestamp);
-          });
-        }
-      }
-    },
-
     onResults: function(results) {
       this.canvasCtx.save();
       this.canvasCtx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
@@ -202,7 +165,7 @@ AFRAME.registerComponent('input-manager', {
         let targetHandLandmarks = null;
       
         for (let i = 0; i < results.multiHandedness.length; i++) {
-          if (results.multiHandedness[i].label.toLowerCase() === this.targetHand) {
+          if (results.multiHandedness[i].label.toLowerCase() === this.oppositeHand) {
             targetHandLandmarks = results.multiHandLandmarks[i];
             break;
           }
