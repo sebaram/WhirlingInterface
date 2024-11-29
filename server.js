@@ -5,7 +5,7 @@ const connectLivereload = require('connect-livereload');
 const fs = require('fs');
 
 const app = express();
-const port = 1028;
+const port = 80;
 
 // Configure live reload server
 const liveReloadServer = livereload.createServer();

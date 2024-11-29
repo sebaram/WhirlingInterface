@@ -1,0 +1,14 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "51737:80"
+    volumes:
+      - ./whirling:/usr/src/app/whirling
+      - ./aframe:/usr/src/app/aframe
+      - ./server.js:/usr/src/app/server.js
+    environment:
+      - NODE_ENV=dev  # Change to 'start' for production
+    restart: unless-stopped  # Add auto-restart policy
+
