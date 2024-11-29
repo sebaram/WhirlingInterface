@@ -25,6 +25,24 @@ AFRAME.registerComponent('hand-tracking-base', {
     document.getElementById('jointSelector').addEventListener('change', (event) => {
       this.targetJoint = event.target.value;
     });
+
+    // add event listener to toggle mediapipe or webxr on enter-vr/exit-vr
+    this.sceneEl.addEventListener('enter-vr', () => {
+      console.log("enter-vr");
+      // Enable WebXR hand tracking and disable MediaPipe tracking
+      document.querySelector('[hand-tracking-webxr]').setAttribute('hand-tracking-webxr', 'active', true);
+      document.querySelector('[hand-tracking-mediapipe]').setAttribute('hand-tracking-mediapipe', 'active', false);
+      // pause mediapipe
+      document.querySelector('[hand-tracking-mediapipe]').components['hand-tracking-mediapipe'].pause();
+    });
+    this.sceneEl.addEventListener('exit-vr', () => {
+      console.log("exit-vr");
+      // Enable MediaPipe hand tracking and disable WebXR tracking
+      document.querySelector('[hand-tracking-webxr]').setAttribute('hand-tracking-webxr', 'active', false);
+      document.querySelector('[hand-tracking-mediapipe]').setAttribute('hand-tracking-mediapipe', 'active', true);
+      // resume mediapipe
+      document.querySelector('[hand-tracking-mediapipe]').components['hand-tracking-mediapipe'].resume();
+    });
   },
 
   setInputManagerInactive: function(inactive) {
@@ -50,8 +68,12 @@ AFRAME.registerComponent('hand-tracking-base', {
 // WebXR-specific component
 AFRAME.registerComponent('hand-tracking-webxr', {
   dependencies: ['hand-tracking-base'],
+  schema: {
+    active: {type: 'boolean', default: false}
+  },
 
   init: function() {
+    console.log("hand-tracking-webxr|init: ", this.data);
     this.frame = null;
     this.spheres = {};
     this.baseComponent = this.el.components['hand-tracking-base'];
@@ -120,8 +142,12 @@ AFRAME.registerComponent('hand-tracking-webxr', {
 // MediaPipe-specific component
 AFRAME.registerComponent('hand-tracking-mediapipe', {
   dependencies: ['hand-tracking-base'],
+  schema: {
+    active: {type: 'boolean', default: false}
+  },
 
   init: function() {
+    this.camera = null;
     this.baseComponent = this.el.components['hand-tracking-base'];
 
     // text to joint index mapping
@@ -132,11 +158,32 @@ AFRAME.registerComponent('hand-tracking-mediapipe', {
         'middle_tip': 12,
         'ring_tip': 16,
         'pinky_tip': 20
-      };
+    };
 
-    
+    this.lastResults = null;
     this.initializeMediaPipe();
   },
+
+  pause: function() {
+    if (this.camera) {
+      this.camera.stop();
+    }
+    this.canvasCtx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+  },
+  resume: function() {
+    this.initializeMediaPipe();
+  },
+
+  tick: function() {
+    if (!this.data.active){
+      return;
+    }
+
+    if (this.lastResults) {
+      this.processResults(this.lastResults);
+    }
+  },
+
   initializeMediaPipe: function() {
     //check if webcam is available
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -172,9 +219,11 @@ AFRAME.registerComponent('hand-tracking-mediapipe', {
       minTrackingConfidence: 0.5
     });
 
-    hands.onResults(this.onResults.bind(this));
+    hands.onResults((results) => {
+      this.lastResults = results;
+    });
 
-    const camera = new Camera(this.videoElement, {
+    this.camera = new Camera(this.videoElement, {
       onFrame: async () => {
         await hands.send({image: this.videoElement});
       },
@@ -182,7 +231,7 @@ AFRAME.registerComponent('hand-tracking-mediapipe', {
       height: 720
     });
 
-    camera.start();
+    this.camera.start();
 
     // Resize canvas to match video dimensions
     this.resizeCanvas();
@@ -194,7 +243,6 @@ AFRAME.registerComponent('hand-tracking-mediapipe', {
     let height = window.innerHeight * 0.2; // 20% of window height
     let width = height * aspectRatio;
 
-
     this.canvasElement.width = width;
     this.canvasElement.height = height;
     
@@ -203,7 +251,7 @@ AFRAME.registerComponent('hand-tracking-mediapipe', {
     this.canvasElement.style.height = `${height}px`;
   },
 
-  onResults: function(results) {
+  processResults: function(results) {
     this.canvasCtx.save();
     this.canvasCtx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
     this.canvasCtx.drawImage(
@@ -264,6 +312,5 @@ AFRAME.registerComponent('hand-tracking-mediapipe', {
       this.baseComponent.setInputManagerInactive(!toggleActiveMode);
     }
     this.canvasCtx.restore();
-  
   }
 });
