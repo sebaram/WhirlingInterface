@@ -5,7 +5,8 @@ export class OrbitTarget {
       this.id = id;
       this.radius = radius;
       this.period = period;
-      this.targetRadius = 0.05;
+      this.targetRadiusRatio = 0.3;
+      this.targetRadius = this.radius * this.targetRadiusRatio;
       this.clockwise = clockwise;
       this.position = position;
       this.theta = 0;
@@ -161,10 +162,10 @@ export class OrbitTarget {
     updateButtonName() {
       // donot show correlation if state is INACTIVE
       if (this.state === OrbitState.INACTIVE) {
-        this.buttonGroup.querySelector('a-text').setAttribute('value', `Button ${this.id}\n${this.state}`);
+        this.buttonGroup.querySelector('a-text').setAttribute('value', `Button ${this.id}\n${this.state}\nRadius: ${(this.radius * 100).toFixed(1)}cm`);
         return;
       }
-      this.buttonGroup.querySelector('a-text').setAttribute('value', `Button ${this.id}\n${this.state}\nCorr: ${this.correlation.toFixed(2)}`);
+      this.buttonGroup.querySelector('a-text').setAttribute('value', `Button ${this.id}\n${this.state}\nRadius: ${(this.radius * 100).toFixed(1)}cm\nCorr: ${this.correlation.toFixed(2)}`);
     }
     
 

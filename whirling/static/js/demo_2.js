@@ -2,69 +2,6 @@ import { MAXIMUM_FRAME } from './constants.js';
 import { InputManager } from './inputmanager.js';
 import { OrbitTarget } from './orbittarget.js';
 
-AFRAME.registerComponent('hand-skeleton', {
-  init: function () {
-      this.referenceSpace = null;
-      this.frame = null;
-      this.spheres = {}; // store spheres for each joint
-  },
-
-  tick: function () {
-      if (!this.frame) {
-          this.frame = this.el.sceneEl.frame;
-          this.referenceSpace = this.el.sceneEl.renderer.xr.getReferenceSpace();
-      } else {
-          this.renderHandSkeleton();
-          // add interaction
-          // perform gesture detection
-      }
-  },
-
-  renderHandSkeleton: function() {
-      const session = this.el.sceneEl.renderer.xr.getSession();
-      const inputSources = session.inputSources;
-      if (!this.frame || !this.referenceSpace) {
-          return;
-      }
-      for (const inputSource of inputSources) {
-          if (inputSource.hand) {
-              const hand = inputSource.hand;
-              const handedness = inputSource.handedness;
-              for (const finger of orderedJoints) {
-                  for (const jointName of finger) {
-                      const joint = hand.get(jointName);
-                      if (joint) {
-                          const jointPose = this.frame.getJointPose(joint, this.referenceSpace);
-                          const position = jointPose.transform.position;
-                          if (!this.spheres[handedness + '_' + jointName]) {
-                              this.spheres[handedness + '_' + jointName] = this.drawSphere(jointPose.radius, position);
-                          } else {
-                              this.spheres[handedness + '_' + jointName].object3D.position.set(position.x, position.y, position.z);
-                          }
-                      }
-                  }
-              }
-          }
-      }
-  },
-
-  remove: function () {
-      // clean up rendered spheres
-      for (const jointName in this.spheres) {
-          this.spheres[jointName].parentNode.removeChild(this.spheres[jointName]);
-      }
-  },
-
-  drawSphere: function(radius, position) {
-      const sphere = document.createElement('a-sphere');
-      sphere.setAttribute('radius', radius);
-      sphere.setAttribute('color', 'red');
-      sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
-      this.el.appendChild(sphere);
-      return sphere;
-  },
-});
-
 
 AFRAME.registerComponent('input-manager', {
     init: function () {
@@ -78,7 +15,7 @@ AFRAME.registerComponent('input-manager', {
       const orbitPosition = '0 1.5 -2';
       const speed = 2;
       const clockwise = true;
-      const radius = 0.2; // Increased radius for the big target
+      const radius = 0.048; // Increased radius for the big target
 
       const orbit = new OrbitTarget(0, radius, speed, clockwise, orbitPosition);
       this.manager.addOrbit(orbit);
@@ -109,9 +46,9 @@ AFRAME.registerComponent('input-manager', {
       this.isVRHeadset = this.el.sceneEl.is('vr-mode');
       this.inputManager = document.querySelector('a-scene').components['input-manager'].manager;
 
-      this.targetHand = 'left';
-      this.oppositeHand = 'right';
-      this.targetJoint = 'wrist';
+      this.targetHand = document.getElementById('handSelector').value;
+      this.oppositeHand = this.targetHand === 'left' ? 'right' : 'left';
+      this.targetJoint = document.getElementById('jointSelector').value;
       this.jointIndices = {
         'wrist': 0,
         'thumb_tip': 4,
@@ -120,6 +57,8 @@ AFRAME.registerComponent('input-manager', {
         'ring_tip': 16,
         'pinky_tip': 20
       };
+
+      this.spheres = {};
 
       // Add event listeners for hand and joint selectors
       document.getElementById('handSelector').addEventListener('change', (event) => {
@@ -180,15 +119,20 @@ AFRAME.registerComponent('input-manager', {
                   const wristPose = this.frame.getJointPose(wristJoint, this.referenceSpace);
                   const wristPosition = wristPose.transform.position;
 
+                  // draw sphere
+                  if (!this.spheres[handedness + '_wrist']) {
+                    this.spheres[handedness + '_wrist'] = this.drawSphere(wristPose.radius, wristPosition);
+                  } else {
+                    this.spheres[handedness + '_wrist'].object3D.position.set(wristPosition.x, wristPosition.y, wristPosition.z);
+                  }
+
                   this.inputManager.wristHistory.push({
                     timestamp: time,
                     position: {x: wristPosition.x, y: wristPosition.y, z: wristPosition.z}
                   });
-
                   if (this.inputManager.wristHistory.length > MAXIMUM_FRAME) {
                     this.inputManager.wristHistory.shift();
                   }
-
                   this.inputManager.orbits.forEach(orbit => {
                     orbit.addThetaHistory(time);
                   });
@@ -201,6 +145,15 @@ AFRAME.registerComponent('input-manager', {
         }
 
       }
+    },
+
+    drawSphere: function(radius, position) {
+        const sphere = document.createElement('a-sphere');
+        sphere.setAttribute('radius', radius);
+        sphere.setAttribute('color', 'red');
+        sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+        this.el.appendChild(sphere);
+        return sphere;
     },
 
 
