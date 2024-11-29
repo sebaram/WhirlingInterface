@@ -8,6 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <script type="module" src="/static/js/demo_12.js"></script>
+    <script type="module" src="/static/js/hand-tracking.js"></script>
+
+    
 
     <style>
       video {
@@ -87,8 +90,16 @@
 
     </div>
 
-    <a-scene input-manager hand-tracking>
-      <a-sky color="#ECECEC"></a-sky>
+    <a-scene xr-mode-ui="enabled: true; enterAREnabled: true; enterVREnabled: true; XRMode: xr;" >
+      <!-- <a-sky color="#ECECEC"></a-sky> -->
+       <a-entity id="input-manager" input-manager></a-entity>
+      <a-entity 
+      id="hand-tracking"
+      hand-tracking-base
+      hand-tracking-webxr="active: false"
+      hand-tracking-mediapipe="active: true">
+    </a-entity>
+
     </a-scene>
 
     <script>
