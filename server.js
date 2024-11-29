@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Whirling Interface Demos</title>
+                <title>Whirling Interface Demos-Testing</title>
                 <style>
                     body { 
                         font-family: Arial, sans-serif;
@@ -70,7 +70,7 @@ app.get('/', (req, res) => {
                 <h1>Whirling Interface Demos</h1>
                 <ul>
                     ${htmlFiles.map(file => `
-                        <li><a href="/demo/${file}">${file.replace('.html', '')}</a></li>
+                        <li><a href="/demo/${file.replace('.html', '')}">${file.replace('.html', '')}</a></li>
                     `).join('')}
                 </ul>
             </body>
@@ -88,9 +88,12 @@ app.get('/demo', (req, res) => {
 
 // Route for demo files
 app.get('/demo/:filename', (req, res) => {
-    res.sendFile(path.join(__dirname, 'whirling/demo', req.params.filename));
+    // If filename contains no extension, add .html
+    const file = req.params.filename.includes('.') ? 
+        req.params.filename : 
+        `${req.params.filename}.html`;
+    res.sendFile(path.join(__dirname, 'whirling/demo', file));
 });
-
 
 // Error handling for file not found
 app.use((req, res) => {

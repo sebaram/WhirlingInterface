@@ -13,6 +13,7 @@
 
 
     <script type="module" src="/static/js/demo_2.js"></script>
+    <script type="module" src="/static/js/hand-tracking.js"></script>
 
     <style>
       video {
@@ -93,8 +94,16 @@
     </div>
 
 
-      <a-scene environment input-manager hand-tracking xr-mode-ui="enabled: true; enterAREnabled: true; enterVREnabled: true; XRMode: xr;" >
+      <a-scene environment xr-mode-ui="enabled: true; enterAREnabled: true; enterVREnabled: true; XRMode: xr;" >
         <!-- <a-sky color="#ECECEC"></a-sky> -->
+        <a-entity id="input-manager" input-manager></a-entity>
+
+        <a-entity 
+          id="hand-tracking"
+          hand-tracking-base
+          hand-tracking-webxr="active: false"
+          hand-tracking-mediapipe="active: true">
+        </a-entity>
 
         <a-entity log geometry="primitive: plane" material="color: #111" text="color: lightgreen" position="-1 1.5 -2"></a-entity>
         
