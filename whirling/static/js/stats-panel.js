@@ -50,8 +50,9 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Default to visible, but remember whatever the user picked last time.
-let visible = localStorage.getItem(STORAGE_KEY) !== 'false';
+// Default to hidden - it is a debugging readout, not part of the demo - but
+// remember whatever the user picked last time.
+let visible = localStorage.getItem(STORAGE_KEY) === 'true';
 
 const button = document.createElement('button');
 button.id = 'stats-toggle';
