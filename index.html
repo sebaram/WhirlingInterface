@@ -14,6 +14,9 @@
     --line: #e4e2dd;
     --accent: #d4453a;
     --accent-soft: #fdeceb;
+    --wip-ink: #8a5a00;
+    --wip-bg: #fdf3dd;
+    --wip-line: #e3c98a;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -24,6 +27,9 @@
       --line: #2e2e34;
       --accent: #ff6b5e;
       --accent-soft: #33201e;
+      --wip-ink: #e8b552;
+      --wip-bg: #332a16;
+      --wip-line: #5c4a22;
     }
   }
   * { box-sizing: border-box; }
@@ -51,6 +57,23 @@
 
   h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 48px 0 16px; font-weight: 600; }
   h2:first-of-type { margin-top: 0; }
+  h2 .wip {
+    margin-left: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--wip-ink);
+    background: var(--wip-bg);
+    border: 1px solid var(--wip-line);
+  }
+  .wip-note {
+    margin: -6px 0 16px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .demo.is-wip { border-style: dashed; }
+  .tag.wip { color: var(--wip-ink); border-color: var(--wip-line); background: var(--wip-bg); }
 
   .note {
     background: var(--accent-soft); border-radius: 8px; padding: 16px 20px;
@@ -118,24 +141,26 @@
     <div class="tags"><span class="tag hw">Webcam</span><span class="tag">MediaPipe</span><span class="tag">A-Frame</span></div>
   </a>
 
-  <h2>Headset demos — WebXR hand tracking</h2>
+  <h2>Headset demos — WebXR hand tracking <span class="wip">Under development</span></h2>
 
-  <a class="demo" href="whirling/demo/demo_2targets_onlywebxr.html">
+  <p class="wip-note">The WebXR versions are still being worked on and may be incomplete or change without notice. The webcam demos above are the stable ones.</p>
+
+  <a class="demo is-wip" href="whirling/demo/demo_2targets_onlywebxr.html">
     <p class="demo-title">2 targets — WebXR only</p>
     <p class="demo-desc">The two-target scene driven by the headset's native hand tracking instead of a webcam. Enter immersive mode to try it.</p>
-    <div class="tags"><span class="tag hw">Headset</span><span class="tag">WebXR</span><span class="tag">A-Frame</span></div>
+    <div class="tags"><span class="tag wip">WIP</span><span class="tag hw">Headset</span><span class="tag">WebXR</span><span class="tag">A-Frame</span></div>
   </a>
 
-  <a class="demo" href="whirling/demo/hands.html">
+  <a class="demo is-wip" href="whirling/demo/hands.html">
     <p class="demo-title">Hand interaction sandbox</p>
     <p class="demo-desc">Pinch, press and grab primitives through a floating menu — a reference scene for the hand-tracking building blocks used by the demos above.</p>
-    <div class="tags"><span class="tag hw">Headset</span><span class="tag">WebXR</span><span class="tag">A-Frame</span></div>
+    <div class="tags"><span class="tag wip">WIP</span><span class="tag hw">Headset</span><span class="tag">WebXR</span><span class="tag">A-Frame</span></div>
   </a>
 
-  <a class="demo" href="whirling/demo/hands_samsung.html">
+  <a class="demo is-wip" href="whirling/demo/hands_samsung.html">
     <p class="demo-title">Hand skeleton viewer</p>
     <p class="demo-desc">Renders every tracked hand joint as a sphere in AR passthrough. Useful for checking what joint data a device actually reports.</p>
-    <div class="tags"><span class="tag hw">Headset</span><span class="tag">WebXR AR</span><span class="tag">A-Frame</span></div>
+    <div class="tags"><span class="tag wip">WIP</span><span class="tag hw">Headset</span><span class="tag">WebXR AR</span><span class="tag">A-Frame</span></div>
   </a>
 
   <footer>
