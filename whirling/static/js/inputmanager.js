@@ -151,5 +151,11 @@ export class InputManager {
       });
     }
 
+    setOrbitRadius(radius){
+      this.orbits.forEach(orbit => {
+        orbit.setOrbitRadius(radius);
+      });
+    }
+
 
   }

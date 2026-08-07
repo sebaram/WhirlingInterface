@@ -10,6 +10,7 @@
     <script type="module" src="../static/js/demo_12.js"></script>
     <script type="module" src="../static/js/hand-tracking.js"></script>
     <script type="module" src="../static/js/stats-panel.js"></script>
+    <script type="module" src="../static/js/size-controls.js"></script>
 
     
 
@@ -64,8 +65,15 @@
       </label>
 
       <div class="slider">
-        <label for="radiusSlider">Radius:</label>
-        <input type="range" id="radiusSlider" min="0.01" max="1" step="0.01" value="0.05">
+        <label for="orbitSlider">Orbit:</label>
+        <input type="range" id="orbitSlider" min="0.02" max="0.5" step="0.001">
+        <span id="orbitValue" class="readout"></span>
+      </div>
+
+      <div class="slider">
+        <label for="radiusSlider">Target:</label>
+        <input type="range" id="radiusSlider" min="0.005" max="0.25" step="0.001">
+        <span id="radiusValue" class="readout"></span>
       </div>
       
       <div class="dropdown">
@@ -109,13 +117,7 @@
       let mediapipeEnabled = true;
       let forcedActiveMode = false;
 
-      // Handle radius slider input
-      document.getElementById('radiusSlider').addEventListener('input', function() {
-        const radius = parseFloat(this.value);
-        // input-manager lives on the #input-manager entity, not on the scene.
-        let inputManager = document.querySelector('#input-manager').components['input-manager'].manager;
-        inputManager.setOrbitTargetRadius(radius);
-      });
+      // Orbit / target sliders are wired up in static/js/size-controls.js
 
       document.getElementById('toggleVideo').addEventListener('change', function() {
         if (this.checked) {

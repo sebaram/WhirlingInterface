@@ -1,5 +1,11 @@
 import {OrbitState, MAXIMUM_FRAME, ORBIT_RADIUS_MULTIPLIER, CORRELATION_MULTIPLIER} from './constants.js';
 
+// Half the width of the orbit trace band, in metres.
+const TRACE_HALF_WIDTH = 0.01;
+// Floors so a slider dragged to its minimum can't produce degenerate geometry.
+const MIN_ORBIT_RADIUS = 0.005;
+const MIN_TARGET_RADIUS = 0.002;
+
 // three.js draws a transparent, double-sided material twice — back faces then
 // front faces — so the two sides blend in the right order. The orbit graphics
 // are flat rings and discs, so there are never two sides to sort: one pass
@@ -97,6 +103,8 @@ export class OrbitTarget {
       this.backgroundSphere = backgroundCircle;
       this.buttonGroup = buttonGroup;
       this.buttonBackground = buttonBackground;
+      this.orbitTrace = orbitTrace;
+      this.buttonName = buttonName;
 
       return entity;
     }
@@ -152,7 +160,7 @@ export class OrbitTarget {
       const color = this.getStateColor();
       this.sphere.setAttribute('material', 'color', color);
       this.buttonBackground.setAttribute('material', 'color', color);
-      this.buttonGroup.querySelector('a-text').setAttribute('color', 
+      this.buttonName.setAttribute('color',
         this.state === OrbitState.PENDING || this.state === OrbitState.SELECTED ? '#FFFFFF' : '#000000');
 
       // set button text as Button ID and state
@@ -181,12 +189,17 @@ export class OrbitTarget {
     }
 
     updateButtonName() {
+      // "Radius" used to print only this.radius, so the target slider moved the
+      // dot on screen while the label sat unchanged. Name both explicitly:
+      // orbit = the path's radius, target = the dot's own radius.
+      const sizes = `Orbit: ${(this.radius * 100).toFixed(1)}cm\nTarget: ${(this.targetRadius * 100).toFixed(1)}cm`;
+
       // donot show correlation if state is INACTIVE
       if (this.state === OrbitState.INACTIVE) {
-        this.buttonGroup.querySelector('a-text').setAttribute('value', `Button ${this.id}\n${this.state}\nRadius: ${(this.radius * 100).toFixed(1)}cm`);
+        this.buttonName.setAttribute('value', `Button ${this.id}\n${this.state}\n${sizes}`);
         return;
       }
-      this.buttonGroup.querySelector('a-text').setAttribute('value', `Button ${this.id}\n${this.state}\nRadius: ${(this.radius * 100).toFixed(1)}cm\nCorr: ${this.correlation.toFixed(2)}`);
+      this.buttonName.setAttribute('value', `Button ${this.id}\n${this.state}\n${sizes}\nCorr: ${this.correlation.toFixed(2)}`);
     }
     
 
@@ -210,14 +223,36 @@ export class OrbitTarget {
       console.log(`Orbit ${this.id} state changed to ${this.state}`);
     }
 
+    // Size of the moving target dot itself.
     setSphereRadius(radius){
-      this.sphere.setAttribute('radius', radius);
-      this.targetRadius = radius;
+      this.targetRadius = Math.max(radius, MIN_TARGET_RADIUS);
+      this.sphere.setAttribute('radius', this.targetRadius);
       // The background circle marks the size the dot reaches at full
       // correlation, so it has to be rescaled along with the target - otherwise
       // it stays at whatever the constructor set and the dot grows out of it.
       this.backgroundSphere.setAttribute('radius',
-        radius * (ORBIT_RADIUS_MULTIPLIER + CORRELATION_MULTIPLIER));
+        this.targetRadius * (ORBIT_RADIUS_MULTIPLIER + CORRELATION_MULTIPLIER));
+      this.updateButtonName();
+    }
+
+    // Radius of the circular path the target travels along. Everything drawn
+    // from it - the trace band, the button face behind it and the label scale -
+    // has to be rebuilt; the dot's position follows on the next update().
+    setOrbitRadius(radius){
+      this.radius = Math.max(radius, MIN_ORBIT_RADIUS);
+
+      // Keep the trace a band centred on the path, without letting a small
+      // orbit push the inner edge through zero.
+      const halfWidth = Math.min(TRACE_HALF_WIDTH, this.radius * 0.5);
+      this.orbitTrace.setAttribute('radius-inner', this.radius - halfWidth);
+      this.orbitTrace.setAttribute('radius-outer', this.radius + halfWidth);
+
+      this.buttonBackground.setAttribute('radius', this.radius - halfWidth);
+
+      const fontSize = this.radius * 1.0;
+      this.buttonName.setAttribute('scale', `${fontSize} ${fontSize} 1`);
+
+      this.updateButtonName();
     }
 
     setInitialTheta(theta) {
