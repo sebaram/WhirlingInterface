@@ -10,6 +10,8 @@
     <script type="module" src="../static/js/demo_12.js"></script>
     <script type="module" src="../static/js/hand-tracking.js"></script>
     <script type="module" src="../static/js/stats-panel.js"></script>
+    <script type="module" src="../static/js/controls-panel.js"></script>
+    <script type="module" src="../static/js/target-picker.js"></script>
     <script type="module" src="../static/js/size-controls.js"></script>
 
     
@@ -53,16 +55,24 @@
   <body>
     <!-- Add the toggle switches -->
     <div class="switch">
+      <!-- Visual hand/joint picker, built by static/js/target-picker.js.
+           The selects below stay as the source of truth for hand-tracking. -->
+      <div id="targetPicker"></div>
 
-      <label>
-        <input type="checkbox" id="toggleVideo" checked>
-        Toggle Video
-      </label>
-      
-      <label>
-        <input type="checkbox" id="toggleActiveMode">
-        Toggle Active Mode
-      </label>
+      <select id="handSelector" hidden>
+        <option value="right">Right</option>
+        <option value="left">Left</option>
+      </select>
+      <select id="jointSelector" hidden>
+        <option value="wrist">Wrist</option>
+        <option value="thumb_tip">Thumb</option>
+        <option value="index_tip">Index</option>
+        <option value="middle_tip">Middle</option>
+        <option value="ring_tip">Ring</option>
+        <option value="pinky_tip">Pinky</option>
+      </select>
+
+      <hr class="cp-rule">
 
       <div class="slider">
         <label for="orbitSlider">Orbit:</label>
@@ -75,28 +85,19 @@
         <input type="range" id="radiusSlider" min="0.005" max="0.25" step="0.001">
         <span id="radiusValue" class="readout"></span>
       </div>
-      
-      <div class="dropdown">
-        <label for="handSelector">Target Hand:</label>
-        <select id="handSelector">
-          <option value="right">Right</option>
-          <option value="left">Left</option>
-        </select>
-      </div>
 
-      <div class="dropdown">
-        <label for="jointSelector">Target Joint:</label>
-        <select id="jointSelector">
-          <option value="wrist">Wrist</option>
-          <option value="thumb_tip">Thumb</option>
-          <option value="index_tip">Index</option>
-          <option value="middle_tip">Middle</option>
-          <option value="ring_tip">Ring</option>
-          <option value="pinky_tip">Pinky</option>
-        </select>
-      </div>
+      <hr class="cp-rule">
 
+      <label>
+        <input type="checkbox" id="toggleVideo" checked>
+        Show webcam preview
+      </label>
 
+      <label>
+        <input type="checkbox" id="toggleActiveMode">
+        Force active (no hand needed)
+      </label>
+    
     </div>
 
     <a-scene stats xr-mode-ui="enabled: true; enterAREnabled: true; enterVREnabled: true; XRMode: xr;" >
@@ -119,19 +120,8 @@
 
       // Orbit / target sliders are wired up in static/js/size-controls.js
 
-      document.getElementById('toggleVideo').addEventListener('change', function() {
-        if (this.checked) {
-          console.log('Video is ON');
-          let videoElement = document.getElementById('mediapipe-canvas');
-          // Show video
-          videoElement.style.display = 'block';
-        } else {
-          console.log('Video is OFF');
-          let videoElement = document.getElementById('mediapipe-canvas');
-          // Hide video
-          videoElement.style.display = 'none';
-        }
-      });
+      // Webcam preview toggle (checkbox + click on the preview itself) is
+      // handled in static/js/controls-panel.js
 
       document.getElementById('toggleActiveMode').addEventListener('change', function() {
         if (this.checked) {

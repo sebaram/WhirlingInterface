@@ -5,32 +5,7 @@
 // in step and lets the sliders start from whatever sizes the demo actually
 // built, instead of a hardcoded default that matched neither.
 
-// The panel is plain text drawn straight over the 3D scene, which is hard to
-// read against the targets. Give it a backing plate and line the rows up.
-const style = document.createElement('style');
-style.textContent = `
-  .switch {
-    width: 300px;
-    background: rgba(252, 252, 252, .92);
-    border: 1px solid rgba(0, 0, 0, .12);
-    padding: 10px 12px;
-    border-radius: 6px;
-    font: 13px/1.6 system-ui, -apple-system, sans-serif;
-    color: #1a1a1c;
-  }
-  .switch .slider, .switch .dropdown { align-items: center; }
-  .switch .slider label, .switch .dropdown label { flex: 0 0 92px; margin-right: 0; }
-  .switch .slider input[type="range"] { flex: 1 1 auto; min-width: 0; }
-  .switch .readout {
-    flex: 0 0 60px;
-    margin-left: 10px;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-    color: #444;
-    white-space: nowrap;
-  }
-`;
-document.head.appendChild(style);
+// Panel chrome and layout live in controls-panel.js.
 
 const CONTROLS = [
   {slider: 'orbitSlider',  readout: 'orbitValue',  apply: 'setOrbitRadius',       read: (o) => o.radius},
