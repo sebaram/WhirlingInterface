@@ -1,5 +1,20 @@
 import {OrbitState, MAXIMUM_FRAME, ORBIT_RADIUS_MULTIPLIER, CORRELATION_MULTIPLIER} from './constants.js';
 
+// three.js draws a transparent, double-sided material twice — back faces then
+// front faces — so the two sides blend in the right order. The orbit graphics
+// are flat rings and discs, so there are never two sides to sort: one pass
+// looks identical and halves both the draw calls and the triangle count.
+AFRAME.registerComponent('single-pass-material', {
+  init: function () {
+    const apply = () => {
+      const mesh = this.el.getObject3D('mesh');
+      if (mesh) { mesh.material.forceSinglePass = true; }
+    };
+    apply();
+    this.el.addEventListener('object3dset', apply);
+  }
+});
+
 export class OrbitTarget {
     constructor(id, radius, period, clockwise, position) {
       this.id = id;
@@ -27,11 +42,16 @@ export class OrbitTarget {
       orbitTrace.setAttribute('radius-inner', this.radius - 0.01);
       orbitTrace.setAttribute('radius-outer', this.radius + 0.01);
       orbitTrace.setAttribute('segments-theta', 64);
+      // A-Frame defaults segmentsPhi to 10, subdividing the 1cm-wide band
+      // radially into 10 rows for no visual gain — 1280 triangles per ring
+      // instead of 128. The band is flat and one colour, so 1 row is enough.
+      orbitTrace.setAttribute('segments-phi', 1);
       orbitTrace.setAttribute('material', {
         color: '#888888',
         opacity: 0.5,
         side: 'double'
       });
+      orbitTrace.setAttribute('single-pass-material', '');
       entity.appendChild(orbitTrace);
 
       const buttonBackground = document.createElement('a-circle');
@@ -70,6 +90,7 @@ export class OrbitTarget {
         side: 'double'
       });
       backgroundCircle.setAttribute('position', '0 0 0');  // Slightly behind the main circle
+      backgroundCircle.setAttribute('single-pass-material', '');
       entity.appendChild(backgroundCircle);
 
       this.sphere = circle;
