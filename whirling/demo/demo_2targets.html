@@ -134,8 +134,9 @@
 
       // Handle radius slider input
       document.getElementById('radiusSlider').addEventListener('input', function() {
-        const radius = this.value;
-        let inputManager = document.querySelector('a-scene').components['input-manager'].manager;
+        const radius = parseFloat(this.value);
+        // input-manager lives on the #input-manager entity, not on the scene.
+        let inputManager = document.querySelector('#input-manager').components['input-manager'].manager;
         inputManager.setOrbitTargetRadius(radius);
       });
 

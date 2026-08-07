@@ -213,6 +213,11 @@ export class OrbitTarget {
     setSphereRadius(radius){
       this.sphere.setAttribute('radius', radius);
       this.targetRadius = radius;
+      // The background circle marks the size the dot reaches at full
+      // correlation, so it has to be rescaled along with the target - otherwise
+      // it stays at whatever the constructor set and the dot grows out of it.
+      this.backgroundSphere.setAttribute('radius',
+        radius * (ORBIT_RADIUS_MULTIPLIER + CORRELATION_MULTIPLIER));
     }
 
     setInitialTheta(theta) {
