@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whirling Interface — Demos</title>
+<meta name="description" content="Live WebXR / MediaPipe demos for Whirling Interface: hand-based motion matching selection for small targets on XR displays (IEEE ISMAR 2024).">
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --ink: #1a1a1c;
+    --muted: #6b6b73;
+    --line: #e4e2dd;
+    --accent: #d4453a;
+    --accent-soft: #fdeceb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #131316;
+      --surface: #1c1c20;
+      --ink: #ececef;
+      --muted: #9a9aa4;
+      --line: #2e2e34;
+      --accent: #ff6b5e;
+      --accent-soft: #33201e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 64px 24px 96px; }
+
+  header { border-bottom: 1px solid var(--line); padding-bottom: 32px; margin-bottom: 40px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin: 0 0 12px;
+  }
+  h1 { font-size: clamp(32px, 6vw, 44px); line-height: 1.1; margin: 0 0 16px; letter-spacing: -.02em; }
+  .tagline { color: var(--muted); margin: 0 0 20px; font-size: 17px; }
+  .links a {
+    color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line);
+    margin-right: 20px; font-size: 14px; padding-bottom: 2px;
+  }
+  .links a:hover { color: var(--accent); border-color: var(--accent); }
+
+  h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 48px 0 16px; font-weight: 600; }
+  h2:first-of-type { margin-top: 0; }
+
+  .note {
+    background: var(--accent-soft); border-radius: 8px; padding: 16px 20px;
+    font-size: 14px; color: var(--ink); margin-bottom: 40px;
+  }
+  .note ul { margin: 8px 0 0; padding-left: 20px; }
+  .note li { margin: 4px 0; }
+
+  .demo {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px 22px; margin-bottom: 12px;
+    transition: border-color .15s, transform .15s;
+  }
+  .demo:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .demo-title { font-size: 18px; font-weight: 600; margin: 0 0 6px; letter-spacing: -.01em; }
+  .demo:hover .demo-title { color: var(--accent); }
+  .demo-desc { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 11px; letter-spacing: .04em; text-transform: uppercase; font-weight: 600;
+    color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 3px 8px;
+  }
+  .tag.hw { color: var(--accent); border-color: var(--accent); }
+
+  footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  footer cite { font-style: normal; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">IEEE ISMAR 2024</p>
+    <h1>Whirling Interface</h1>
+    <p class="tagline">Hand-based motion matching selection for small targets on XR displays.</p>
+    <p class="links">
+      <a href="https://juyounglee.net/projects/whirling">Project page</a>
+      <a href="https://github.com/sebaram/WhirlingInterface">Source on GitHub</a>
+    </p>
+  </header>
+
+  <div class="note">
+    <strong>Before you start</strong>
+    <ul>
+      <li>Webcam demos need camera permission and run best on a laptop or PC.</li>
+      <li>On mobile, use landscape orientation.</li>
+      <li>Move the viewpoint with <code>WASD</code> or the arrow keys.</li>
+      <li>Headset demos need a WebXR browser with hand tracking (Quest, Vision Pro, …).</li>
+    </ul>
+  </div>
+
+  <h2>Webcam demos — MediaPipe hand tracking</h2>
+
+  <a class="demo" href="whirling/demo/demo_12targets.html">
+    <p class="demo-title">12 targets at 2&nbsp;m</p>
+    <p class="demo-desc">The main configuration from the paper: twelve small targets arranged in a ring at two metres. Match a target's orbital motion with your hand to select it.</p>
+    <div class="tags"><span class="tag hw">Webcam</span><span class="tag">MediaPipe</span><span class="tag">A-Frame</span></div>
+  </a>
+
+  <a class="demo" href="whirling/demo/demo_2targets.html">
+    <p class="demo-title">2 closely spaced targets</p>
+    <p class="demo-desc">Two targets placed very close together — the hardest case for ray-based pointing, and where motion matching pays off most.</p>
+    <div class="tags"><span class="tag hw">Webcam</span><span class="tag">MediaPipe</span><span class="tag">A-Frame</span></div>
+  </a>
+
+  <h2>Headset demos — WebXR hand tracking</h2>
+
+  <a class="demo" href="whirling/demo/demo_2targets_onlywebxr.html">
+    <p class="demo-title">2 targets — WebXR only</p>
+    <p class="demo-desc">The two-target scene driven by the headset's native hand tracking instead of a webcam. Enter immersive mode to try it.</p>
+    <div class="tags"><span class="tag hw">Headset</span><span class="tag">WebXR</span><span class="tag">A-Frame</span></div>
+  </a>
+
+  <a class="demo" href="whirling/demo/hands.html">
+    <p class="demo-title">Hand interaction sandbox</p>
+    <p class="demo-desc">Pinch, press and grab primitives through a floating menu — a reference scene for the hand-tracking building blocks used by the demos above.</p>
+    <div class="tags"><span class="tag hw">Headset</span><span class="tag">WebXR</span><span class="tag">A-Frame</span></div>
+  </a>
+
+  <a class="demo" href="whirling/demo/hands_samsung.html">
+    <p class="demo-title">Hand skeleton viewer</p>
+    <p class="demo-desc">Renders every tracked hand joint as a sphere in AR passthrough. Useful for checking what joint data a device actually reports.</p>
+    <div class="tags"><span class="tag hw">Headset</span><span class="tag">WebXR AR</span><span class="tag">A-Frame</span></div>
+  </a>
+
+  <footer>
+    <cite>Juyoung Lee, Seo Young Oh, Minju Baeck, Hui Shyong Yeo, Hyung-il Kim, Thad Starner, Woontack Woo.
+    “Whirling Interface: Hand-based Motion Matching Selection for Small Target on XR Displays.”
+    IEEE ISMAR 2024.</cite>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -39,3 +39,6 @@ coverage/
 
 # Optional REPL history
 .node_repl_history
+
+# Playwright MCP output
+.playwright-mcp/
