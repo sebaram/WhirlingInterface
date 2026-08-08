@@ -17,10 +17,14 @@ Webcam (MediaPipe hand tracking):
 - [12 targets at 2m](https://sebaram.github.io/WhirlingInterface/whirling/demo/demo_12targets.html)
 - [2 targets, very close](https://sebaram.github.io/WhirlingInterface/whirling/demo/demo_2targets.html)
 
-Headset (WebXR hand tracking):
-- [2 targets, WebXR only](https://sebaram.github.io/WhirlingInterface/whirling/demo/demo_2targets_onlywebxr.html)
-- [Hand interaction sandbox](https://sebaram.github.io/WhirlingInterface/whirling/demo/hands.html)
+Headset (WebXR hand tracking, AR or VR):
+- [12 targets](https://sebaram.github.io/WhirlingInterface/whirling/demo/demo_12targets_onlywebxr.html)
+- [2 targets](https://sebaram.github.io/WhirlingInterface/whirling/demo/demo_2targets_onlywebxr.html)
 - [Hand skeleton viewer](https://sebaram.github.io/WhirlingInterface/whirling/demo/hands_samsung.html)
+
+Scenes: the webcam demos default to a museum gallery; add `?scene=outdoor` or
+`?scene=lab` (plain grid) to either. The headset demos default to the plain
+grid, since AR passthrough and a virtual room do not mix.
 
 ### Running locally
 

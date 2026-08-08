@@ -118,6 +118,8 @@ const LAB_ORBIT_RADIUS = 0.2;
 const LAB_PAIR_RADIUS = 0.048;
 
 const MUSEUM_WALL_Z = -3.0;
+// Height of the info plaque under the single work in the two-target layout.
+const MUSEUM_PLAQUE_Y = 0.92;
 
 // A gallery hang is not a grid. Sizes vary with the work, pieces cluster, and
 // they sit *about* a centre line near eye level rather than on one - small
@@ -202,13 +204,21 @@ export const SCENES = {
 
       if (count === 2) {
         // The pair are two markers on one work, so show that one work.
-        const solo = make('a-entity', {position: `0 1.62 ${front + 0.03}`}, room);
+        const solo = make('a-entity', {position: `0 1.72 ${front + 0.03}`}, room);
         make('a-box', {width: '1.5', height: '1.1', depth: '0.05',
                        material: 'color: #33333f; roughness: 0.6'}, solo);
         make('a-plane', {position: '0 0 0.035', width: '1.38', height: '0.98',
-                         material: {shader: 'flat', src: paintingTexture(3)}}, solo);
+                         material: {shader: 'flat', src: paintingTexture(3, 1.38 / 0.98)}}, solo);
         make('a-text', {value: 'Interior, Morning - oil on canvas', align: 'center',
                         width: '1.8', position: '0 -0.66 0.04', color: '#9a9aa8'}, solo);
+
+        // The plaque the two markers sit on.
+        const plaque = make('a-entity', {position: `0 ${MUSEUM_PLAQUE_Y} ${front + 0.04}`}, room);
+        make('a-plane', {width: '0.42', height: '0.21',
+                         material: 'shader: flat; color: #2b2b36'}, plaque);
+        // Below the markers, not behind them.
+        make('a-text', {value: 'Audio guide          Details', align: 'center', width: '0.62',
+                        position: '0 -0.078 0.01', color: '#8f8f9c'}, plaque);
         return;
       }
 
@@ -227,11 +237,13 @@ export const SCENES = {
 
     anchors (count) {
       if (count === 2) {
-        // Two markers on one work: audio guide and details, side by side.
+        // On the plaque beneath the work, not on the canvas - a control sitting
+        // over the painting reads as a defect, and the plaque is where a
+        // gallery puts anything you are meant to press.
         return [
-          {position: `${-PAIR_SEPARATION} 1.62 ${MUSEUM_WALL_Z + 0.12}`,
+          {position: `${-PAIR_SEPARATION} ${MUSEUM_PLAQUE_Y} ${MUSEUM_WALL_Z + 0.12}`,
            orbitRadius: DRESSED_PAIR_RADIUS, label: 'Audio'},
-          {position: `${PAIR_SEPARATION} 1.62 ${MUSEUM_WALL_Z + 0.12}`,
+          {position: `${PAIR_SEPARATION} ${MUSEUM_PLAQUE_Y} ${MUSEUM_WALL_Z + 0.12}`,
            orbitRadius: DRESSED_PAIR_RADIUS, label: 'Details'}
         ];
       }
@@ -343,9 +355,19 @@ export const SCENES = {
 
 /* -------------------------------------------------------------------- api */
 
+// A page can pick its own default with
+//   <meta name="whirling-default-scene" content="lab">
+// The headset demos use it: a virtual gallery around you is the opposite of
+// what AR passthrough is for.
+function pageDefaultScene () {
+  const meta = document.querySelector('meta[name="whirling-default-scene"]');
+  const asked = meta && meta.getAttribute('content');
+  return Object.prototype.hasOwnProperty.call(SCENES, asked) ? asked : DEFAULT_SCENE;
+}
+
 export function activeSceneName () {
   const asked = new URLSearchParams(location.search).get('scene');
-  return Object.prototype.hasOwnProperty.call(SCENES, asked) ? asked : DEFAULT_SCENE;
+  return Object.prototype.hasOwnProperty.call(SCENES, asked) ? asked : pageDefaultScene();
 }
 
 export function activeScene () {
@@ -373,6 +395,17 @@ export function buildScene (sceneEl, targetCount) {
     const log = document.querySelector('[log]');
     if (log) { log.setAttribute('visible', false); }
   }
+
+  // In AR the room has to get out of the way, or its walls sit between you and
+  // the passthrough view of the actual room you are standing in. The targets
+  // stay: they are the part worth overlaying on the world.
+  const room = () => document.querySelector('#scene-room');
+  sceneEl.addEventListener('enter-vr', () => {
+    if (sceneEl.is('ar-mode') && room()) { room().setAttribute('visible', false); }
+  });
+  sceneEl.addEventListener('exit-vr', () => {
+    if (room()) { room().setAttribute('visible', true); }
+  });
 
   return scene;
 }
