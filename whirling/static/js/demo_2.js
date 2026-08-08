@@ -1,12 +1,6 @@
 import { InputManager } from './inputmanager.js';
 import { OrbitTarget } from './orbittarget.js';
-import { buildScene } from './scenes.js';
-
-// Used when the active scene supplies no anchors of its own (?scene=lab).
-const FALLBACK_PAIR = [
-  {position: '0 1.5 -2', orbitRadius: 0.048},
-  {position: '1 1.5 -2', orbitRadius: 0.048}
-];
+import { buildScene, targetAnchors } from './scenes.js';
 
 AFRAME.registerComponent('input-manager', {
     init: function () {
@@ -17,18 +11,17 @@ AFRAME.registerComponent('input-manager', {
       this.lastCorrelationTime = 0;
       this.correlationInterval = 200;
 
-      // Environment first: the scene owns where the targets belong.
-      const scene = buildScene(this.el.sceneEl, 2);
-      const anchors = scene.anchors(2) || FALLBACK_PAIR;
+      // Environment first: the scene owns where the targets belong and how big
+      // they are.
+      buildScene(this.el.sceneEl, 2);
 
       const speed = 2;
-      anchors.forEach((anchor, index) => {
+      targetAnchors(2).forEach((anchor, index) => {
         // The pair counter-rotate, which is what makes two targets this close
         // separable at all.
-        const orbit = new OrbitTarget(index, anchor.orbitRadius || 0.048, speed,
+        const orbit = new OrbitTarget(index, anchor.orbitRadius, speed,
                                       index === 0, anchor.position);
         if (anchor.label) { orbit.label = anchor.label; }
-        if (anchor.targetRadius) { orbit.setSphereRadius(anchor.targetRadius); }
         this.manager.addOrbit(orbit);
       });
     },

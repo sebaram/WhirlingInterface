@@ -100,6 +100,20 @@ const PLACES = [
   ['Bus Stop 14', '55 m'], ['Green Market', '70 m'], ['Car Park', '180 m']
 ];
 
+// Orbit radii, in metres. Each scene states its own, because how small a target
+// can be depends on how far away its content sits. The dressed scenes lean
+// small deliberately: selection is by matching motion, not by pointing, so a
+// target never has to be big enough to hit accurately. The dot inside each
+// orbit is derived from TARGET_RADIUS_RATIO, so there is one number per layout.
+const DRESSED_ORBIT_RADIUS = 0.07;   // museum + outdoor markers, ~3 m away
+const DRESSED_PAIR_RADIUS = 0.032;   // two markers that nearly touch
+// Gap of a quarter radius between the pair, so they read as adjacent, not merged.
+const PAIR_SEPARATION = DRESSED_PAIR_RADIUS * 2.25;
+
+// The measurement layout keeps the sizes and positions it was tuned with.
+const LAB_ORBIT_RADIUS = 0.2;
+const LAB_PAIR_RADIUS = 0.048;
+
 const MUSEUM_X = [-2.55, -0.85, 0.85, 2.55];
 const MUSEUM_Y = [2.55, 1.65, 0.75];
 const MUSEUM_WALL_Z = -3.0;
@@ -107,6 +121,9 @@ const MUSEUM_WALL_Z = -3.0;
 const OUTDOOR_X = [-2.4, -0.8, 0.8, 2.4];
 const OUTDOOR_Y = [2.6, 1.7, 0.8];
 const OUTDOOR_Z = -3.4;
+
+const LAB_X = [-1.65, -0.55, 0.55, 1.65];
+const LAB_Y = [2.2, 1.6, 1.0];
 
 export const SCENES = {
   museum: {
@@ -175,13 +192,15 @@ export const SCENES = {
       if (count === 2) {
         // Two markers on one work: audio guide and details, side by side.
         return [
-          {position: `-0.13 1.62 ${MUSEUM_WALL_Z + 0.12}`, orbitRadius: 0.055, targetRadius: 0.017, label: 'Audio'},
-          {position: `0.13 1.62 ${MUSEUM_WALL_Z + 0.12}`, orbitRadius: 0.055, targetRadius: 0.017, label: 'Details'}
+          {position: `${-PAIR_SEPARATION} 1.62 ${MUSEUM_WALL_Z + 0.12}`,
+           orbitRadius: DRESSED_PAIR_RADIUS, label: 'Audio'},
+          {position: `${PAIR_SEPARATION} 1.62 ${MUSEUM_WALL_Z + 0.12}`,
+           orbitRadius: DRESSED_PAIR_RADIUS, label: 'Details'}
         ];
       }
       return grid(MUSEUM_X, MUSEUM_Y).map(cell => ({
         position: `${cell.x + 0.42} ${cell.y} ${MUSEUM_WALL_Z + 0.09}`,
-        orbitRadius: 0.17, targetRadius: 0.05, label: 'Info'
+        orbitRadius: DRESSED_ORBIT_RADIUS, label: 'Info'
       }));
     },
 
@@ -241,13 +260,15 @@ export const SCENES = {
     anchors (count) {
       if (count === 2) {
         return [
-          {position: `-0.12 1.65 ${OUTDOOR_Z + 0.1}`, orbitRadius: 0.055, targetRadius: 0.017, label: 'Cafe'},
-          {position: `0.12 1.65 ${OUTDOOR_Z + 0.1}`, orbitRadius: 0.055, targetRadius: 0.017, label: 'Bakery'}
+          {position: `${-PAIR_SEPARATION} 1.65 ${OUTDOOR_Z + 0.1}`,
+           orbitRadius: DRESSED_PAIR_RADIUS, label: 'Cafe'},
+          {position: `${PAIR_SEPARATION} 1.65 ${OUTDOOR_Z + 0.1}`,
+           orbitRadius: DRESSED_PAIR_RADIUS, label: 'Bakery'}
         ];
       }
       return grid(OUTDOOR_X, OUTDOOR_Y).map(cell => ({
         position: `${cell.x + 0.42} ${cell.y} ${OUTDOOR_Z + 0.06}`,
-        orbitRadius: 0.16, targetRadius: 0.048, label: 'Go'
+        orbitRadius: DRESSED_ORBIT_RADIUS, label: 'Go'
       }));
     },
 
@@ -259,7 +280,20 @@ export const SCENES = {
            'without anything else on screen.',
     background: null,
     build () {},
-    anchors () { return null; }   // demo scripts keep their own grid
+
+    // Unchanged from before the scenes existed: same positions, same radii.
+    anchors (count) {
+      if (count === 2) {
+        return [
+          {position: '0 1.5 -2', orbitRadius: LAB_PAIR_RADIUS},
+          {position: '1 1.5 -2', orbitRadius: LAB_PAIR_RADIUS}
+        ];
+      }
+      return grid(LAB_X, LAB_Y).map(cell => ({
+        position: `${cell.x} ${cell.y} -2`,
+        orbitRadius: LAB_ORBIT_RADIUS
+      }));
+    }
   }
 };
 
@@ -272,6 +306,12 @@ export function activeSceneName () {
 
 export function activeScene () {
   return SCENES[activeSceneName()];
+}
+
+// Where this layout's targets go. Scenes own both the geometry and its sizes,
+// so the demo scripts hold no coordinates of their own.
+export function targetAnchors (count) {
+  return activeScene().anchors(count) || SCENES.lab.anchors(count);
 }
 
 // Build the environment as soon as the scene element exists. Called by the demo

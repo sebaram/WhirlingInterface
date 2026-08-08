@@ -3,7 +3,9 @@
   <head>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <script src="https://unpkg.com/aframe-log-component/dist/aframe-log-component.min.js"></script> 
+    <script src="https://unpkg.com/aframe-environment-component@1.5.0/dist/aframe-environment-component.min.js"></script>
+
+    <script src="https://unpkg.com/aframe-log-component/dist/aframe-log-component.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.4.0/dist/aframe-extras.min.js"></script>
 
 
@@ -17,15 +19,15 @@
   <body>
 
 
-      <a-scene stats environment xr-mode-ui="enabled: true;" >
+      <a-scene stats xr-mode-ui="enabled: true;" >
         <!-- <a-sky color="#ECECEC"></a-sky> -->
         <a-entity id="input-manager" input-manager></a-entity>
 
-        <a-entity camera look-controls>
+        <a-entity camera look-controls position="0 1.6 0">
           <a-entity cursor__mouse="rayOrigin: mouse"
           cursor__xrselect="rayOrigin: xrselect"
                     position="0 0 -1"
-                    geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                    geometry="primitive: ring; radiusInner: 0.006; radiusOuter: 0.009"
                     material="color: black; shader: flat">
           </a-entity>
         </a-entity>

@@ -1,22 +1,15 @@
 import { InputManager } from './inputmanager.js';
 import { OrbitTarget } from './orbittarget.js';
-import { buildScene } from './scenes.js';
-
-// Used when the active scene supplies no anchors of its own (?scene=lab).
-const FALLBACK_GRID = [
-  '-1.65 2.2 -2', '-0.55 2.2 -2', '0.55 2.2 -2', '1.65 2.2 -2',
-  '-1.65 1.6 -2', '-0.55 1.6 -2', '0.55 1.6 -2', '1.65 1.6 -2',
-  '-1.65 1.0 -2', '-0.55 1.0 -2', '0.55 1.0 -2', '1.65 1.0 -2'
-].map(position => ({position}));
+import { buildScene, targetAnchors } from './scenes.js';
 
 AFRAME.registerComponent('input-manager', {
     init: function () {
       this.manager = new InputManager();
 
-      // Environment first: the scene owns where the targets belong, so the
-      // room and the anchors cannot drift apart.
-      const scene = buildScene(this.el.sceneEl, 12);
-      const anchors = scene.anchors(12) || FALLBACK_GRID;
+      // Environment first: the scene owns where the targets belong and how big
+      // they are, so the room and the anchors cannot drift apart.
+      buildScene(this.el.sceneEl, 12);
+      const anchors = targetAnchors(12);
 
       const speeds = [1.5, 2];
       const clockwiseOptions = [true, false];
@@ -26,12 +19,11 @@ AFRAME.registerComponent('input-manager', {
         const speed = speeds[orbitIndex % 2];
         const clockwise = clockwiseOptions[Math.floor(orbitIndex / 2) % 2];
         const phase = phases[Math.floor(orbitIndex / 4)];
-        const radius = anchor.orbitRadius || 0.2;
 
-        const orbit = new OrbitTarget(orbitIndex, radius, speed, clockwise, anchor.position);
+        const orbit = new OrbitTarget(orbitIndex, anchor.orbitRadius, speed,
+                                      clockwise, anchor.position);
         if (anchor.label) { orbit.label = anchor.label; }
         orbit.theta = (phase * Math.PI) / 180; // Convert phase to radians
-        if (anchor.targetRadius) { orbit.setSphereRadius(anchor.targetRadius); }
         this.manager.addOrbit(orbit);
       });
 

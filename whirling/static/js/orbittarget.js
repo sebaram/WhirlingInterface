@@ -1,4 +1,5 @@
-import {OrbitState, MAXIMUM_FRAME, ORBIT_RADIUS_MULTIPLIER, CORRELATION_MULTIPLIER} from './constants.js';
+import {OrbitState, MAXIMUM_FRAME, ORBIT_RADIUS_MULTIPLIER, CORRELATION_MULTIPLIER,
+        TARGET_RADIUS_RATIO, SHOW_SIZE_IN_LABEL} from './constants.js';
 
 // Half the width of the orbit trace band, in metres.
 const TRACE_HALF_WIDTH = 0.01;
@@ -26,7 +27,7 @@ export class OrbitTarget {
       this.id = id;
       this.radius = radius;
       this.period = period;
-      this.targetRadiusRatio = 0.3;
+      this.targetRadiusRatio = TARGET_RADIUS_RATIO;
       this.targetRadius = this.radius * this.targetRadiusRatio;
       this.clockwise = clockwise;
       this.position = position;
@@ -196,17 +197,20 @@ export class OrbitTarget {
     }
 
     updateButtonName() {
-      // "Radius" used to print only this.radius, so the target slider moved the
-      // dot on screen while the label sat unchanged. Name both explicitly:
-      // orbit = the path's radius, target = the dot's own radius.
-      const sizes = `Orbit: ${(this.radius * 100).toFixed(1)}cm\nTarget: ${(this.targetRadius * 100).toFixed(1)}cm`;
+      // Sizes are diagnostic: useful while tuning with the sliders, clutter on a
+      // marker that is meant to read as a button. The panel's sliders show both
+      // in cm regardless. SHOW_SIZE_IN_LABEL in constants.js turns them back on.
+      // "Orbit" is the path's radius, "Target" the dot's own.
+      const sizes = SHOW_SIZE_IN_LABEL
+        ? `\nOrbit: ${(this.radius * 100).toFixed(1)}cm\nTarget: ${(this.targetRadius * 100).toFixed(1)}cm`
+        : '';
 
       // donot show correlation if state is INACTIVE
       if (this.state === OrbitState.INACTIVE) {
-        this.buttonName.setAttribute('value', `${this.label}\n${this.state}\n${sizes}`);
+        this.buttonName.setAttribute('value', `${this.label}\n${this.state}${sizes}`);
         return;
       }
-      this.buttonName.setAttribute('value', `${this.label}\n${this.state}\n${sizes}\nCorr: ${this.correlation.toFixed(2)}`);
+      this.buttonName.setAttribute('value', `${this.label}\n${this.state}${sizes}\nCorr: ${this.correlation.toFixed(2)}`);
     }
     
 
