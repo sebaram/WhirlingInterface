@@ -31,12 +31,15 @@ const PALETTES = [
   ['#402b1f', '#a9743f', '#dbb87a', '#5d7a5e']
 ];
 
-function paintingTexture (index) {
+function paintingTexture (index, aspect) {
   const rand = seeded(index + 7);
   const palette = PALETTES[index % PALETTES.length];
   const canvas = document.createElement('canvas');
-  canvas.width = 320;
-  canvas.height = 240;
+  // Match the canvas to the work it goes on, or a portrait piece gets a
+  // landscape image squashed onto it.
+  const ratio = aspect || 4 / 3;
+  canvas.width = Math.round(ratio >= 1 ? 320 : 320 * ratio);
+  canvas.height = Math.round(ratio >= 1 ? 320 / ratio : 320);
   const ctx = canvas.getContext('2d');
 
   const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -114,9 +117,41 @@ const PAIR_SEPARATION = DRESSED_PAIR_RADIUS * 2.25;
 const LAB_ORBIT_RADIUS = 0.2;
 const LAB_PAIR_RADIUS = 0.048;
 
-const MUSEUM_X = [-2.55, -0.85, 0.85, 2.55];
-const MUSEUM_Y = [2.55, 1.65, 0.75];
 const MUSEUM_WALL_Z = -3.0;
+
+// A gallery hang is not a grid. Sizes vary with the work, pieces cluster, and
+// they sit *about* a centre line near eye level rather than on one - small
+// works stack in pairs, a big canvas anchors a group. Laid out by hand rather
+// than generated, because a good hang is composed, not scattered.
+//
+// x, y are the centre of the canvas; w, h its size. The marker that belongs to
+// each work is derived from this in anchors(), so moving a painting moves its
+// marker with it and the two cannot drift apart.
+// Kept inside roughly +/-3.4 m: at this wall distance that is what the camera
+// actually frames, and a hang you cannot see is not a hang.
+const MUSEUM_HANG = [
+  {x: -2.78, y: 1.72, w: 1.06, h: 1.42},   // 0  large canvas anchoring the left
+  {x: -2.78, y: 3.02, w: 0.54, h: 0.38},   // 1  small, hung high above it
+  {x: -1.42, y: 2.36, w: 0.60, h: 0.46},   // 2  stacked pair, upper
+  {x: -1.42, y: 1.44, w: 0.60, h: 0.50},   // 3  stacked pair, lower
+  {x: -1.55, y: 0.62, w: 0.56, h: 0.42},   // 4  small, low, clear of the caption above
+  {x: -0.24, y: 1.98, w: 0.94, h: 0.68},   // 5  landscape, centre
+  {x: -0.30, y: 1.08, w: 0.54, h: 0.42},   // 6  small, below and offset
+  {x:  0.30, y: 3.00, w: 0.50, h: 0.38},   // 7  small, high centre
+  {x:  1.00, y: 1.82, w: 0.48, h: 1.22},   // 8  tall narrow
+  {x:  0.98, y: 0.66, w: 0.58, h: 0.44},   // 9  small, low
+  {x:  2.30, y: 2.18, w: 1.22, h: 0.82},   // 10 large landscape
+  {x:  2.10, y: 1.02, w: 0.82, h: 0.60}    // 11 medium, below it
+];
+
+// Frame width scales with the work, the way a real one would.
+const frameWidth = (piece) => Math.max(0.05, Math.min(0.09, piece.w * 0.07));
+
+// Clearance between the *frame* edge and the marker beside it. Measuring from
+// the canvas instead leaves the frame overlapping its own marker.
+const MARKER_GAP = 0.09;
+const marker = (piece) =>
+  piece.x + piece.w / 2 + frameWidth(piece) + MARKER_GAP + DRESSED_ORBIT_RADIUS;
 
 const OUTDOOR_X = [-2.4, -0.8, 0.8, 2.4];
 const OUTDOOR_Y = [2.6, 1.7, 0.8];
@@ -177,14 +212,16 @@ export const SCENES = {
         return;
       }
 
-      grid(MUSEUM_X, MUSEUM_Y).forEach((cell, i) => {
-        const art = make('a-entity', {position: `${cell.x - 0.30} ${cell.y} ${front + 0.03}`}, room);
-        make('a-box', {width: '0.86', height: '0.64', depth: '0.05',
+      MUSEUM_HANG.forEach((piece, i) => {
+        const art = make('a-entity', {position: `${piece.x} ${piece.y} ${front + 0.03}`}, room);
+
+        const frame = frameWidth(piece);
+        make('a-box', {width: piece.w + frame * 2, height: piece.h + frame * 2, depth: '0.05',
                        material: 'color: #33333f; roughness: 0.6'}, art);
-        make('a-plane', {position: '0 0 0.035', width: '0.78', height: '0.56',
-                         material: {shader: 'flat', src: paintingTexture(i)}}, art);
-        make('a-text', {value: ARTWORKS[i], align: 'center', width: '1.2',
-                        position: '0 -0.42 0.04', color: '#9a9aa8'}, art);
+        make('a-plane', {position: '0 0 0.035', width: piece.w, height: piece.h,
+                         material: {shader: 'flat', src: paintingTexture(i, piece.w / piece.h)}}, art);
+        make('a-text', {value: ARTWORKS[i], align: 'center', width: '1.15',
+                        position: `0 ${-(piece.h / 2 + frame + 0.1)} 0.04`, color: '#9a9aa8'}, art);
       });
     },
 
@@ -198,8 +235,9 @@ export const SCENES = {
            orbitRadius: DRESSED_PAIR_RADIUS, label: 'Details'}
         ];
       }
-      return grid(MUSEUM_X, MUSEUM_Y).map(cell => ({
-        position: `${cell.x + 0.42} ${cell.y} ${MUSEUM_WALL_Z + 0.09}`,
+      // Derived from the hang, so a marker always sits beside its own work.
+      return MUSEUM_HANG.map(piece => ({
+        position: `${marker(piece)} ${piece.y} ${MUSEUM_WALL_Z + 0.09}`,
         orbitRadius: DRESSED_ORBIT_RADIUS, label: 'Info'
       }));
     },
