@@ -17,6 +17,9 @@
     --wip-ink: #8a5a00;
     --wip-bg: #fdf3dd;
     --wip-line: #e3c98a;
+    --base-ink: #2f5d8a;
+    --base-bg: #e8f0f8;
+    --base-line: #a8c4de;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -30,6 +33,9 @@
       --wip-ink: #e8b552;
       --wip-bg: #332a16;
       --wip-line: #5c4a22;
+      --base-ink: #7fb0e0;
+      --base-bg: #17222d;
+      --base-line: #2f4a63;
     }
   }
   * { box-sizing: border-box; }
@@ -77,6 +83,13 @@
   .scene-note a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
   .scene-note a:hover { color: var(--accent); border-color: var(--accent); }
   .tag.wip { color: var(--wip-ink); border-color: var(--wip-line); background: var(--wip-bg); }
+  .tag.base { color: var(--base-ink); border-color: var(--base-line); background: var(--base-bg); }
+  h2 .baseline, .demo-title .baseline {
+    margin-left: 8px; padding: 2px 7px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--base-ink); background: var(--base-bg); border: 1px solid var(--base-line);
+    vertical-align: middle;
+  }
 
   .note {
     background: var(--accent-soft); border-radius: 8px; padding: 16px 20px;
@@ -171,11 +184,16 @@
     <div class="tags"><span class="tag wip">WIP</span><span class="tag hw">Headset</span><span class="tag">WebXR AR</span><span class="tag">A-Frame</span></div>
   </a>
 
-  <p class="scene-note">The headset demos also carry a comparison baseline: add
-    <code>?select=ray</code> for ray&nbsp;+&nbsp;pinch instead of motion matching
-    (<a href="whirling/demo/demo_12targets_onlywebxr.html?select=ray">12 targets</a> &middot;
-    <a href="whirling/demo/demo_2targets_onlywebxr.html?select=ray">2 targets</a>).
-    Same scene, same targets, same sizes &mdash; only the selection technique changes.</p>
+  <a class="demo is-wip" href="whirling/demo/demo_12targets_onlywebxr.html?select=ray">
+    <p class="demo-title">12 targets — ray + pinch <span class="baseline">baseline</span></p>
+    <p class="demo-desc">The same twelve targets selected the conventional way: point with the headset's hand ray, pinch to confirm. Same scene, same positions, same sizes — only the technique changes, which is what makes it a comparison.</p>
+    <div class="tags"><span class="tag base">Baseline</span><span class="tag hw">Headset</span><span class="tag">WebXR AR</span><span class="tag">A-Frame</span></div>
+  </a>
+
+  <p class="scene-note">Both headset demos take <code>?select=ray</code>, so you can run the baseline on
+    <a href="whirling/demo/demo_12targets_onlywebxr.html?select=ray">12 targets</a> or
+    <a href="whirling/demo/demo_2targets_onlywebxr.html?select=ray">2 targets</a>,
+    and drop the parameter to switch back to motion matching.</p>
 
   <a class="demo is-wip" href="whirling/demo/hands_samsung.html">
     <p class="demo-title">Hand skeleton viewer</p>
