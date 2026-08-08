@@ -37,6 +37,9 @@ export class OrbitTarget {
       this.state = OrbitState.INACTIVE;
       // Scenes override this so a marker can read "Info" rather than "Button 3".
       this.label = `Button ${id}`;
+      // The orbit trace and moving dot belong to the motion-matching technique
+      // rather than to the target. A baseline technique turns them off.
+      this.motionVisible = true;
       this.entity = this.createEntity();
       this.blinkInterval = null;
       this.correlation = 0;
@@ -175,7 +178,7 @@ export class OrbitTarget {
       this.updateButtonName();
 
       // if inactive, hide the circle, else show it
-      const isVisible = this.state !== OrbitState.INACTIVE;
+      const isVisible = this.motionVisible && this.state !== OrbitState.INACTIVE;
       this.sphere.setAttribute('visible', isVisible);
       this.backgroundSphere.setAttribute('visible', isVisible);
 
@@ -232,6 +235,15 @@ export class OrbitTarget {
       this.state = states[(currentIndex + 1) % states.length];
       this.updateState();
       console.log(`Orbit ${this.id} state changed to ${this.state}`);
+    }
+
+    // Shows or hides everything that is part of the motion-matching technique:
+    // the orbit trace, the moving dot and its halo. The button face and label
+    // stay, so a baseline technique aims at exactly the same target.
+    setMotionVisible (visible) {
+      this.motionVisible = visible;
+      this.orbitTrace.setAttribute('visible', visible);
+      this.updateState();
     }
 
     // Size of the moving target dot itself.

@@ -5,6 +5,9 @@ export class InputManager {
     constructor() {
       this.orbits = [];
       this.globalState = OrbitState.INACTIVE;
+      // A comparison technique (see select-ray.js) turns this off so the hand
+      // drives its own selection instead of a correlation.
+      this.motionMatching = true;
       this.inactive = true;
       this.wristHistory = [];
 
@@ -37,6 +40,7 @@ export class InputManager {
     }
 
     calculateCorrelations(){
+      if (!this.motionMatching) return;
       if (this.wristHistory.length < MINIMUM_FRAME) return;  // Need at least 2 points for correlation
 
       let maxCorr = -1;
