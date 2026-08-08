@@ -34,6 +34,8 @@ export class OrbitTarget {
       this.twoPI = 2 * Math.PI;
       this.lastTime = 0;
       this.state = OrbitState.INACTIVE;
+      // Scenes override this so a marker can read "Info" rather than "Button 3".
+      this.label = `Button ${id}`;
       this.entity = this.createEntity();
       this.blinkInterval = null;
       this.correlation = 0;
@@ -55,7 +57,10 @@ export class OrbitTarget {
       orbitTrace.setAttribute('material', {
         color: '#888888',
         opacity: 0.5,
-        side: 'double'
+        side: 'double',
+        // These are UI, not scene geometry - flat shading keeps them legible
+        // whatever the environment's lighting is doing.
+        shader: 'flat'
       });
       orbitTrace.setAttribute('single-pass-material', '');
       entity.appendChild(orbitTrace);
@@ -64,7 +69,8 @@ export class OrbitTarget {
       buttonBackground.setAttribute('radius', this.radius - 0.01);
       buttonBackground.setAttribute('material', {
         color: '#FFFFFF',
-        opacity: 0.8
+        opacity: 0.8,
+        shader: 'flat'
       });
 
       const fontSize = this.radius * 1.0;
@@ -82,7 +88,7 @@ export class OrbitTarget {
 
       const circle = document.createElement('a-circle');
       circle.setAttribute('radius', this.targetRadius*ORBIT_RADIUS_MULTIPLIER);
-      circle.setAttribute('color', 'gray');
+      circle.setAttribute('material', {color: 'gray', shader: 'flat'});
       circle.setAttribute('position', '0 0 0.001');  // Slight offset to avoid z-fighting
       entity.appendChild(circle);
 
@@ -93,7 +99,8 @@ export class OrbitTarget {
         color: '#000000',
         opacity: 0.3,
         transparent: true,
-        side: 'double'
+        side: 'double',
+        shader: 'flat'
       });
       backgroundCircle.setAttribute('position', '0 0 0');  // Slightly behind the main circle
       backgroundCircle.setAttribute('single-pass-material', '');
@@ -196,10 +203,10 @@ export class OrbitTarget {
 
       // donot show correlation if state is INACTIVE
       if (this.state === OrbitState.INACTIVE) {
-        this.buttonName.setAttribute('value', `Button ${this.id}\n${this.state}\n${sizes}`);
+        this.buttonName.setAttribute('value', `${this.label}\n${this.state}\n${sizes}`);
         return;
       }
-      this.buttonName.setAttribute('value', `Button ${this.id}\n${this.state}\n${sizes}\nCorr: ${this.correlation.toFixed(2)}`);
+      this.buttonName.setAttribute('value', `${this.label}\n${this.state}\n${sizes}\nCorr: ${this.correlation.toFixed(2)}`);
     }
     
 

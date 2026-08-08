@@ -73,6 +73,9 @@
     color: var(--muted);
   }
   .demo.is-wip { border-style: dashed; }
+  .scene-note { margin: 14px 2px 0; font-size: 14px; color: var(--muted); }
+  .scene-note a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .scene-note a:hover { color: var(--accent); border-color: var(--accent); }
   .tag.wip { color: var(--wip-ink); border-color: var(--wip-line); background: var(--wip-bg); }
 
   .note {
@@ -130,16 +133,21 @@
   <h2>Webcam demos — MediaPipe hand tracking</h2>
 
   <a class="demo" href="whirling/demo/demo_12targets.html">
-    <p class="demo-title">12 targets at 2&nbsp;m</p>
-    <p class="demo-desc">The main configuration from the paper: twelve small targets arranged in a ring at two metres. Match a target's orbital motion with your hand to select it.</p>
+    <p class="demo-title">12 targets — museum gallery</p>
+    <p class="demo-desc">Twelve works on a gallery wall, each with its own info marker. The paper's main configuration, put somewhere it would actually be used.</p>
     <div class="tags"><span class="tag hw">Webcam</span><span class="tag">MediaPipe</span><span class="tag">A-Frame</span></div>
   </a>
 
   <a class="demo" href="whirling/demo/demo_2targets.html">
     <p class="demo-title">2 closely spaced targets</p>
-    <p class="demo-desc">Two targets placed very close together — the hardest case for ray-based pointing, and where motion matching pays off most.</p>
+    <p class="demo-desc">Two markers on a single artwork, side by side — the hardest case for ray-based pointing, and where motion matching pays off most.</p>
     <div class="tags"><span class="tag hw">Webcam</span><span class="tag">MediaPipe</span><span class="tag">A-Frame</span></div>
   </a>
+
+  <p class="scene-note">Both webcam demos take a <code>?scene=</code> parameter, or use the Scene dropdown in the controls panel:
+    <a href="whirling/demo/demo_12targets.html?scene=museum">museum</a> &middot;
+    <a href="whirling/demo/demo_12targets.html?scene=outdoor">outdoor</a> &middot;
+    <a href="whirling/demo/demo_12targets.html?scene=lab">lab</a>, the plain grid for measurement.</p>
 
   <h2>Headset demos — WebXR hand tracking <span class="wip">Under development</span></h2>
 

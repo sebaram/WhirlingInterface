@@ -61,6 +61,9 @@ style.textContent = `
     font-variant-numeric: tabular-nums; color: #444; white-space: nowrap;
   }
   .cp-rule { margin: 10px 0; border: 0; border-top: 1px solid rgba(0,0,0,.1); }
+  .switch .dropdown label { flex: 0 0 56px; margin-right: 0; }
+  .switch .dropdown select { flex: 1 1 auto; min-width: 0; }
+  .scene-blurb { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: #6b6b73; }
 
   #mediapipe-canvas { cursor: pointer; border-radius: 4px; }
 
@@ -95,7 +98,9 @@ if (panel) {
   panel.appendChild(header);
   panel.appendChild(body);
 
-  let open = localStorage.getItem(PANEL_KEY) !== 'false';
+  // Collapsed by default: the scene is the point, and the header still shows
+  // the current target. An explicit choice is remembered.
+  let open = localStorage.getItem(PANEL_KEY) === 'true';
   const renderPanel = () => {
     panel.dataset.open = String(open);
     header.setAttribute('aria-expanded', String(open));

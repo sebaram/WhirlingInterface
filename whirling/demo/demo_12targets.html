@@ -7,6 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
+    <script src="https://unpkg.com/aframe-environment-component@1.5.0/dist/aframe-environment-component.min.js"></script>
+
     <script type="module" src="../static/js/demo_12.js"></script>
     <script type="module" src="../static/js/hand-tracking.js"></script>
     <script type="module" src="../static/js/stats-panel.js"></script>
@@ -55,6 +57,11 @@
   <body>
     <!-- Add the toggle switches -->
     <div class="switch">
+      <!-- Scene switcher, populated by static/js/scenes.js -->
+      <div id="sceneSwitcher"></div>
+
+      <hr class="cp-rule">
+
       <!-- Visual hand/joint picker, built by static/js/target-picker.js.
            The selects below stay as the source of truth for hand-tracking. -->
       <div id="targetPicker"></div>

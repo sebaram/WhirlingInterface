@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.4.0/dist/aframe-extras.min.js"></script>
 
 
+    <script src="https://unpkg.com/aframe-environment-component@1.5.0/dist/aframe-environment-component.min.js"></script>
+
     <script type="module" src="../static/js/demo_2.js"></script>
     <script type="module" src="../static/js/hand-tracking-mediapipe.js"></script>
     <script type="module" src="../static/js/stats-panel.js"></script>
@@ -58,6 +60,11 @@
   <body>
     <!-- Add the toggle switches -->
     <div class="switch">
+      <!-- Scene switcher, populated by static/js/scenes.js -->
+      <div id="sceneSwitcher"></div>
+
+      <hr class="cp-rule">
+
       <!-- Visual hand/joint picker, built by static/js/target-picker.js.
            The selects below stay as the source of truth for hand-tracking. -->
       <div id="targetPicker"></div>
@@ -104,11 +111,11 @@
     </div>
 
 
-      <a-scene stats environment xr-mode-ui="enabled: true; enterAREnabled: true; enterVREnabled: true; XRMode: xr;" >
+      <a-scene stats xr-mode-ui="enabled: true; enterAREnabled: true; enterVREnabled: true; XRMode: xr;" >
         <!-- <a-sky color="#ECECEC"></a-sky> -->
         <a-entity id="input-manager" input-manager></a-entity>
 
-        <a-entity camera look-controls>
+        <a-entity camera look-controls wasd-controls position="0 1.6 0">
           <a-entity cursor__mouse="rayOrigin: mouse"
           cursor__xrselect="rayOrigin: xrselect"
                     position="0 0 -1"
