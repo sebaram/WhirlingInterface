@@ -8,6 +8,8 @@
 //    stub in the same corner, because a display:none canvas cannot be clicked
 //    to bring itself back.
 
+import { activeScene } from './scenes.js';
+
 const PANEL_KEY = 'whirling:controls-open';
 const VIDEO_KEY = 'whirling:video-visible';
 
@@ -61,7 +63,8 @@ style.textContent = `
     font-variant-numeric: tabular-nums; color: #444; white-space: nowrap;
   }
   .cp-rule { margin: 10px 0; border: 0; border-top: 1px solid rgba(0,0,0,.1); }
-  .switch .dropdown label { flex: 0 0 56px; margin-right: 0; }
+  /* Wide enough for "Target Joint:" on one line. */
+  .switch .dropdown label { flex: 0 0 88px; margin-right: 0; }
   .switch .dropdown select { flex: 1 1 auto; min-width: 0; }
   .scene-blurb { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: #6b6b73; }
 
@@ -98,9 +101,12 @@ if (panel) {
   panel.appendChild(header);
   panel.appendChild(body);
 
-  // Collapsed by default: the scene is the point, and the header still shows
-  // the current target. An explicit choice is remembered.
-  let open = localStorage.getItem(PANEL_KEY) === 'true';
+  // A dressed scene is the thing worth looking at, so the panel starts out of
+  // the way and the header carries the current target. The plain scene has
+  // nothing to look at, so it starts open the way it always did. Either way an
+  // explicit choice wins.
+  const stored = localStorage.getItem(PANEL_KEY);
+  let open = stored === null ? activeScene().simple === true : stored === 'true';
   const renderPanel = () => {
     panel.dataset.open = String(open);
     header.setAttribute('aria-expanded', String(open));

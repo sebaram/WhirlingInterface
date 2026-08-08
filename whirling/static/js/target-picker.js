@@ -7,6 +7,10 @@
 // Clicking a joint on either hand sets the hand and the joint together. The
 // Left/Right buttons underneath are the explicit override, and the current
 // target is spelled out in words below them.
+//
+// The plain scene opts out and gets the original dropdowns back instead.
+
+import { activeScene } from './scenes.js';
 
 // MediaPipe's 21 hand landmarks, hand-placed in a 100x124 viewBox as a right
 // hand with the palm toward the viewer. The left hand is the same path mirrored.
@@ -148,7 +152,38 @@ const handSelect = document.getElementById('handSelector');
 const jointSelect = document.getElementById('jointSelector');
 const mount = document.getElementById('targetPicker');
 
-if (handSelect && jointSelect && mount) {
+// The plain scene puts the original dropdowns back rather than the diagram.
+// The selects are already in the page and already drive hand-tracking - they
+// are only hidden - so this is a matter of showing them with their labels.
+function buildPlainDropdowns () {
+  [[handSelect, 'Target Hand:'], [jointSelect, 'Target Joint:']].forEach(([select, text]) => {
+    const row = document.createElement('div');
+    row.className = 'dropdown';
+    const label = document.createElement('label');
+    label.setAttribute('for', select.id);
+    label.textContent = text;
+    select.removeAttribute('hidden');
+    row.appendChild(label);
+    row.appendChild(select);
+    mount.appendChild(row);
+  });
+
+  // The collapsed header still wants to know the target.
+  const announce = () => {
+    const joint = (JOINTS.find(j => j.value === jointSelect.value) || {}).label || jointSelect.value;
+    const hand = (HANDS.find(h => h.value === handSelect.value) || {}).label || handSelect.value;
+    document.dispatchEvent(new CustomEvent('whirling:target-change', {
+      detail: {hand: handSelect.value, joint: jointSelect.value, label: `${hand} · ${joint}`}
+    }));
+  };
+  handSelect.addEventListener('change', announce);
+  jointSelect.addEventListener('change', announce);
+  announce();
+}
+
+if (handSelect && jointSelect && mount && activeScene().simple) {
+  buildPlainDropdowns();
+} else if (handSelect && jointSelect && mount) {
   const hands = {};
 
   const apply = (hand, joint) => {

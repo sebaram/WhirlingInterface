@@ -279,6 +279,12 @@ export const SCENES = {
     blurb: 'No environment. The original layout, for looking at timing and correlation ' +
            'without anything else on screen.',
     background: null,
+
+    // Strips the demo back to how it was before the scenes existed: plain
+    // hand/joint dropdowns instead of the SVG picker, and the panel open. The
+    // geometry below is already the original, so this makes the whole page
+    // match, not just the targets.
+    simple: true,
     build () {},
 
     // Unchanged from before the scenes existed: same positions, same radii.
@@ -365,10 +371,13 @@ if (mount) {
   row.appendChild(label);
   row.appendChild(select);
 
-  const blurb = document.createElement('p');
-  blurb.className = 'scene-blurb';
-  blurb.textContent = SCENES[active].blurb;
-
   mount.appendChild(row);
-  mount.appendChild(blurb);
+
+  // The simple mode keeps the panel as bare as it used to be.
+  if (!SCENES[active].simple) {
+    const blurb = document.createElement('p');
+    blurb.className = 'scene-blurb';
+    blurb.textContent = SCENES[active].blurb;
+    mount.appendChild(blurb);
+  }
 }
